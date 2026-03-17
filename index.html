@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>29 Card Game</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='10' fill='%231a1a2e'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Segoe UI,sans-serif' font-size='30' font-weight='700' fill='%237c6fff'>29</text></svg>">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#1a1a2e;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;}
@@ -587,16 +588,13 @@ async function play(displayIdx){
     let trick=A(G.trick,4).map(c=>c||null);
     trick[mySeat]=card;
 
-    // Trump NEVER auto-reveals — only reveals via REVEAL TRUMP button
-    let trumpR=G.trumpR;
+    // Trump NEVER auto-reveals — only via REVEAL TRUMP button
     let cnt=trick.filter(x=>x).length;
     let next=cnt===4?-1:(mySeat+1)%4;
 
-    // Never touch trumpR here — only doReveal() can change it
     await update(R('game'),{
       [`hands/${mySeat}`]:newHand,
-      trick,
-      cur:next,
+      trick, cur:next,
     });
 
     if(cnt===4){
