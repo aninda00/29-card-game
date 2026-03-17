@@ -7,18 +7,12 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#1a1a2e;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;}
-
-/* ── SCREENS ── */
 .screen{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:100vh;gap:12px;padding:20px;}
 .screen.active{display:flex;}
 #main-screen{display:none;flex-direction:column;height:100vh;width:100%;background:#1a1a2e;}
 #main-screen.active{display:flex;}
-
-/* ── TYPOGRAPHY ── */
 h1{font-size:2.2rem;font-weight:300;letter-spacing:6px;color:#fff;}
 .sub{font-size:0.78rem;color:#666;letter-spacing:2px;text-transform:uppercase;}
-
-/* ── INPUTS & BUTTONS ── */
 .inp{background:#242438;border:1px solid #2a2a45;color:#ddd;padding:11px 16px;border-radius:5px;font-size:0.9rem;outline:none;width:100%;max-width:280px;}
 .inp:focus{border-color:#7c6fff;}
 .inp.code{letter-spacing:6px;text-align:center;text-transform:uppercase;font-size:1.1rem;max-width:160px;}
@@ -31,15 +25,11 @@ h1{font-size:2.2rem;font-weight:300;letter-spacing:6px;color:#fff;}
 .btn.gold{border-color:#c9a84c;color:#c9a84c;}
 .btn.gold:hover{background:#c9a84c18;}
 .row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;}
-
-/* ── LOBBY ── */
 .code-box{font-size:1.8rem;letter-spacing:10px;color:#7c6fff;background:#1e1e34;border:1px solid #2a2a45;border-radius:8px;padding:12px 24px;text-align:center;min-width:200px;}
 .plist{list-style:none;width:100%;max-width:300px;margin-top:4px;}
 .plist li{padding:8px 14px;border-radius:5px;font-size:0.82rem;color:#555;border:1px solid #1e1e34;margin-bottom:4px;background:#191929;}
 .plist li.joined{color:#ccc;border-color:#2a2a45;}
 .plist li.me{color:#7c6fff;border-color:#7c6fff44;}
-
-/* ── INFO BAR ── */
 #info-bar{display:flex;justify-content:space-between;align-items:center;padding:7px 16px;border-bottom:1px solid #222240;flex-wrap:wrap;gap:6px;}
 .teams{display:flex;gap:18px;}
 .tm{display:flex;flex-direction:column;align-items:center;}
@@ -47,20 +37,13 @@ h1{font-size:2.2rem;font-weight:300;letter-spacing:6px;color:#fff;}
 .tm .val{font-size:1rem;color:#ccc;font-weight:300;}
 #trump-disp{font-size:1.3rem;}
 #bid-disp{font-size:0.72rem;color:#777;text-align:center;}
-
-/* ── TABLE ── */
 #table{flex:1;display:grid;grid-template-areas:". top ." "left center right" ". bottom .";grid-template-columns:110px 1fr 110px;grid-template-rows:100px 1fr 100px;padding:6px;gap:2px;}
 .pa{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;}
-.pa.bottom{grid-area:bottom;}
-.pa.top{grid-area:top;}
-.pa.left{grid-area:left;}
-.pa.right{grid-area:right;}
+.pa.bottom{grid-area:bottom;}.pa.top{grid-area:top;}.pa.left{grid-area:left;}.pa.right{grid-area:right;}
 .pn{font-size:0.62rem;letter-spacing:1px;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px;text-align:center;}
 .pn.cur{color:#7c6fff;}
 .hand{display:flex;justify-content:center;flex-wrap:wrap;}
 .hand.v{flex-direction:column;}
-
-/* ── CARDS ── */
 .card{width:40px;height:56px;border-radius:5px;border:1px solid #2a2a45;background:#20203a;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.13s,box-shadow 0.13s;user-select:none;flex-shrink:0;margin:1px;}
 .card:hover{transform:translateY(-7px);box-shadow:0 8px 18px #0006;}
 .card.off{opacity:0.3;cursor:not-allowed;}
@@ -72,27 +55,17 @@ h1{font-size:2.2rem;font-weight:300;letter-spacing:6px;color:#fff;}
 .card.red .r,.card.red .s{color:#e05555;}
 .card.blk .r,.card.blk .s{color:#ddd;}
 .card.sm{width:28px;height:40px;margin:1px;}
-.card.sm .r{font-size:0.58rem;}
-.card.sm .s{font-size:0.65rem;}
+.card.sm .r{font-size:0.58rem;}.card.sm .s{font-size:0.65rem;}
 .bp{width:22px;height:32px;border-radius:3px;background:repeating-linear-gradient(45deg,#252548,#252548 2px,#1a1a38 2px,#1a1a38 6px);}
-
-/* ── CENTER ── */
 #center{grid-area:center;display:flex;align-items:center;justify-content:center;position:relative;}
 #trick-area{display:grid;grid-template-areas:". top ." "left mid right" ". bottom .";grid-template-columns:54px 54px 54px;grid-template-rows:64px 64px 64px;gap:2px;}
 .tp{display:flex;align-items:center;justify-content:center;}
-.tp.tb{grid-area:bottom;}
-.tp.tt{grid-area:top;}
-.tp.tl{grid-area:left;}
-.tp.tr{grid-area:right;}
+.tp.tb{grid-area:bottom;}.tp.tt{grid-area:top;}.tp.tl{grid-area:left;}.tp.tr{grid-area:right;}
 #cstatus{position:absolute;font-size:0.65rem;color:#2a2a45;letter-spacing:2px;pointer-events:none;}
 #trick-msg{position:absolute;background:#1a1a34dd;border:1px solid #2a2a45;border-radius:6px;padding:5px 14px;font-size:0.72rem;color:#aaa;opacity:0;transition:opacity 0.25s;pointer-events:none;}
 #trick-msg.show{opacity:1;}
-
-/* ── CONTROLS ── */
 #controls{padding:8px 16px;border-top:1px solid #222240;display:flex;justify-content:center;align-items:center;gap:10px;min-height:48px;flex-wrap:wrap;}
 #cmsg{font-size:0.74rem;color:#777;}
-
-/* ── OVERLAYS ── */
 .ov{display:none;position:fixed;inset:0;background:#000d;z-index:60;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;}
 .ov.on{display:flex;}
 .ov-title{font-size:0.78rem;letter-spacing:2px;color:#555;text-transform:uppercase;}
@@ -105,22 +78,18 @@ h1{font-size:2.2rem;font-weight:300;letter-spacing:6px;color:#fff;}
 .wait{font-size:0.8rem;color:#444;letter-spacing:2px;}
 .bidinfo{font-size:0.88rem;color:#aaa;}
 .bidinfo span{color:#7c6fff;font-weight:600;}
-
-/* ── RESULT MODAL ── */
 #result-modal{display:none;position:fixed;inset:0;background:#000a;z-index:100;align-items:center;justify-content:center;}
 #result-modal.on{display:flex;}
-.modal{background:#1a1a30;border:1px solid #2a2a45;border-radius:10px;padding:28px 32px;text-align:center;max-width:300px;width:100%;}
+.modal{background:#1a1a30;border:1px solid #2a2a45;border-radius:10px;padding:28px 32px;text-align:center;max-width:320px;width:100%;}
 .modal h2{font-size:1rem;font-weight:400;margin-bottom:6px;}
 .modal .big{font-size:1.5rem;color:#7c6fff;margin:8px 0;}
 .stbl{width:100%;font-size:0.76rem;border-collapse:collapse;margin-bottom:14px;}
 .stbl td{padding:4px 8px;color:#666;}
 .stbl td:last-child{text-align:right;color:#bbb;}
 .stbl tr.hi td{color:#7c6fff;}
-
 .tag{display:inline-block;font-size:0.58rem;padding:1px 6px;border-radius:10px;margin-left:4px;vertical-align:middle;}
 .tag.d{border:1px solid #e05555;color:#e05555;}
 .tag.m{border:1px solid #c9a84c;color:#c9a84c;}
-
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a30;border:1px solid #2a2a45;padding:8px 20px;border-radius:20px;font-size:0.76rem;color:#bbb;opacity:0;transition:opacity 0.25s;pointer-events:none;z-index:200;white-space:nowrap;}
 #toast.on{opacity:1;}
 </style>
@@ -220,7 +189,6 @@ h1{font-size:2.2rem;font-weight:300;letter-spacing:6px;color:#fff;}
     <button class="btn pri" onclick="playAgain()">PLAY AGAIN</button>
   </div>
 </div>
-
 <div id="toast"></div>
 
 <script type="module">
@@ -229,9 +197,6 @@ import { initializeApp }
 import { getDatabase, ref, set, get, update, onValue, off }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-/* ═══════════════════════════════════
-   FIREBASE CONFIG
-═══════════════════════════════════ */
 const app = initializeApp({
   apiKey:           "AIzaSyDPjd-rIUrp6HCxTSVTLqrWg_klxQDwCtY",
   authDomain:       "game-29-177ab.firebaseapp.com",
@@ -243,142 +208,120 @@ const app = initializeApp({
 });
 const db = getDatabase(app);
 
-/* ═══════════════════════════════════
-   CONSTANTS  (from solo v12)
-═══════════════════════════════════ */
+// ── CONSTANTS ──
 const SUITS = ['♠','♥','♦','♣'];
 const RANKS = ['7','8','9','10','J','Q','K','A'];
 const PTS   = {7:0,8:0,9:2,10:1,J:3,Q:0,K:0,A:1};
 const ORD   = {7:0,8:1,Q:2,K:3,10:4,A:5,9:6,J:7};
 
-/* ═══════════════════════════════════
-   STATE
-═══════════════════════════════════ */
-let myRoom = null, mySeat = null, G = null, players = {};
-let busy = false; // prevent double-clicks
+// ── STATE ──
+let myRoom=null, mySeat=null, G=null, players={};
+let busy=false, resolveTimer=null;
 
-/* ═══════════════════════════════════
-   FIREBASE HELPERS
-═══════════════════════════════════ */
-const R  = p => ref(db, p ? `rooms/${myRoom}/${p}` : `rooms/${myRoom}`);
+// ── FIREBASE ──
+const R = p => ref(db, p ? `rooms/${myRoom}/${p}` : `rooms/${myRoom}`);
 
-// Firebase turns arrays into objects — safely restore
+// Safely convert Firebase object/array to JS array
 function A(x, len=0){
   if(!x) return Array(len).fill(null);
   if(Array.isArray(x)) return x;
-  let keys = Object.keys(x).map(Number);
-  let max  = Math.max(len-1, ...keys);
-  let out  = [];
-  for(let i=0;i<=max;i++) out.push(x[i]!==undefined ? x[i] : null);
+  let keys=Object.keys(x).map(Number);
+  let max=Math.max(len-1,...keys);
+  let out=[];
+  for(let i=0;i<=max;i++) out.push(x[i]!==undefined?x[i]:null);
   return out;
 }
 const N = v => Number(v)||0;
 
-/* ═══════════════════════════════════
-   UTILS
-═══════════════════════════════════ */
+// ── UTILS ──
 function shuffle(a){let b=[...a];for(let i=b.length-1;i>0;i--){let j=Math.random()*(i+1)|0;[b[i],b[j]]=[b[j],b[i]];}return b;}
 function code4(){return Math.random().toString(36).slice(2,6).toUpperCase();}
-function pn(s){return players[s]||`P${Number(s)+1}`;}
+function pn(s){return players[s]||`P${N(s)+1}`;}
 function screen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function ov(id){['bid-ov','trump-ov','dbl-ov'].forEach(o=>document.getElementById(o).classList.remove('on'));if(id)document.getElementById(id).classList.add('on');}
 function msg(t){document.getElementById('cmsg').textContent=t;}
 function toast(t){let e=document.getElementById('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2400);}
-function trickMsg(t){let e=document.getElementById('trick-msg');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1200);}
+function trickMsg(t){let e=document.getElementById('trick-msg');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1300);}
 
-/* ═══════════════════════════════════
-   LOBBY
-═══════════════════════════════════ */
+// ── LOBBY ──
 async function createRoom(){
-  let name = document.getElementById('inp-name').value.trim()||'Player 1';
-  myRoom = code4(); mySeat = 0;
-  let data = {players:{0:name}, status:'lobby'};
-  console.log('Creating room:', myRoom, data);
-  try {
-    await set(R(), data);
-    console.log('Room created OK');
-    document.getElementById('lobby-code').textContent = myRoom;
+  let name=document.getElementById('inp-name').value.trim()||'Player 1';
+  myRoom=code4(); mySeat=0;
+  try{
+    await set(R(),{players:{0:name},status:'lobby'});
+    document.getElementById('lobby-code').textContent=myRoom;
     screen('lobby-screen');
     listenLobby();
-  } catch(e){
-    console.error('Create room error:', e);
-    alert('Could not create room.\n\nError: '+e.message+'\n\nMake sure Firebase Realtime Database rules allow read/write:\n{\n  "rules":{\n    ".read":true,\n    ".write":true\n  }\n}');
+  }catch(e){
+    alert('Could not create room.\n\nError: '+e.message+'\n\nCheck Firebase rules:\n{\n  "rules":{\n    ".read":true,\n    ".write":true\n  }\n}');
     myRoom=null;
   }
 }
 
 async function joinRoom(){
-  let name = document.getElementById('inp-name').value.trim()||'Player';
-  let code = document.getElementById('inp-code').value.trim().toUpperCase();
+  let name=document.getElementById('inp-name').value.trim()||'Player';
+  let code=document.getElementById('inp-code').value.trim().toUpperCase();
   if(!code||code.length<4){alert('Enter the 4-letter room code');return;}
-  myRoom = code;
-  try {
-    let d = (await get(R())).val();
-    if(!d){alert('Room "'+code+'" not found. Check the code and try again.');myRoom=null;return;}
-    if(d.status!=='lobby'){alert('This game has already started.');myRoom=null;return;}
-    let taken = Object.keys(d.players||{}).map(Number);
-    let seat  = [0,1,2,3].find(s=>!taken.includes(s));
-    if(seat===undefined){alert('Room is full (4/4 players).');myRoom=null;return;}
-    mySeat = seat;
+  myRoom=code;
+  try{
+    let d=(await get(R())).val();
+    if(!d){alert('Room "'+code+'" not found.');myRoom=null;return;}
+    if(d.status!=='lobby'){alert('Game already started.');myRoom=null;return;}
+    let taken=Object.keys(d.players||{}).map(Number);
+    let seat=[0,1,2,3].find(s=>!taken.includes(s));
+    if(seat===undefined){alert('Room is full.');myRoom=null;return;}
+    mySeat=seat;
     await update(R('players'),{[seat]:name});
-    document.getElementById('lobby-code').textContent = myRoom;
+    document.getElementById('lobby-code').textContent=myRoom;
     screen('lobby-screen');
     listenLobby();
-  } catch(e){ alert('Error joining room: '+e.message); myRoom=null; }
+  }catch(e){alert('Error: '+e.message);myRoom=null;}
 }
 
 function listenLobby(){
-  onValue(R(), snap=>{
-    let d = snap.val(); if(!d) return;
-    players = d.players||{};
-    // Render player list
-    let ul = document.getElementById('plist');
+  onValue(R(),snap=>{
+    let d=snap.val(); if(!d) return;
+    players=d.players||{};
+    let ul=document.getElementById('plist');
     ul.innerHTML='';
     for(let s=0;s<4;s++){
       let li=document.createElement('li');
-      let name = players[s];
-      li.textContent = name ? `Seat ${s+1}:  ${name}${s==mySeat?' (You)':''}` : `Seat ${s+1}:  waiting...`;
-      li.className   = name ? (s==mySeat?'me':'joined') : '';
+      let nm=players[s];
+      li.textContent=nm?`Seat ${s+1}:  ${nm}${s==mySeat?' (You)':''}`:`Seat ${s+1}:  waiting...`;
+      li.className=nm?(s==mySeat?'me':'joined'):'';
       ul.appendChild(li);
     }
-    let cnt = Object.keys(players).length;
-    document.getElementById('lobby-msg').textContent  = cnt<4?`Waiting for ${4-cnt} more player${4-cnt>1?'s':''}...`:'All players ready!';
-    document.getElementById('start-btn').style.display = (mySeat===0&&cnt===4)?'inline-block':'none';
-    // Move to game if started
+    let cnt=Object.keys(players).length;
+    document.getElementById('lobby-msg').textContent=cnt<4?`Waiting for ${4-cnt} more...`:'All players ready!';
+    document.getElementById('start-btn').style.display=(mySeat===0&&cnt===4)?'inline-block':'none';
     if(d.status==='playing'&&d.game){
       off(R()); G=d.game; players=d.players||{};
-      screen('main-screen');
-      listenGame();
-      render();
+      screen('main-screen'); listenGame(); render();
     }
   });
 }
 
-/* ═══════════════════════════════════
-   HOST — START GAME
-═══════════════════════════════════ */
+// ── HOST START ──
 async function hostStart(){
-  let deck = shuffle(SUITS.flatMap(s=>RANKS.map(r=>({suit:s,rank:r}))));
-  let f4   = [deck.slice(0,4),deck.slice(4,8),deck.slice(8,12),deck.slice(12,16)];
-  let l4   = [deck.slice(16,20),deck.slice(20,24),deck.slice(24,28),deck.slice(28,32)];
-  let game = {
-    f4, l4,
-    hands: f4.map(h=>h.map(c=>({...c}))),
-    bid:15, bidder:-1, bidWinner:-1,
-    trump:null, trumpR:false,
-    doubled:false, married:false,
+  let deck=shuffle(SUITS.flatMap(s=>RANKS.map(r=>({suit:s,rank:r}))));
+  let f4=[deck.slice(0,4),deck.slice(4,8),deck.slice(8,12),deck.slice(12,16)];
+  let l4=[deck.slice(16,20),deck.slice(20,24),deck.slice(24,28),deck.slice(28,32)];
+  let game={
+    f4,l4,
+    hands:f4.map(h=>h.map(c=>({...c}))),
+    bid:15,bidder:-1,bidWinner:-1,
+    trump:null,trumpR:false,
+    doubled:false,married:false,
     trick:[null,null,null,null],
-    leader:0, cur:0,
-    tp:[0,0], tw:[0,0], played:0,
-    phase:'bid', pass:0,
-    total:[0,0], dvotes:{},
+    leader:0,cur:0,
+    tp:[0,0],tw:[0,0],played:0,
+    phase:'bid',pass:0,
+    total:[0,0],dvotes:{},
   };
   await update(R(),{status:'playing',game});
 }
 
-/* ═══════════════════════════════════
-   GAME LISTENER
-═══════════════════════════════════ */
+// ── GAME LISTENER ──
 function listenGame(){
   onValue(R('game'),snap=>{
     let d=snap.val(); if(!d) return;
@@ -386,27 +329,21 @@ function listenGame(){
   });
 }
 
-/* ═══════════════════════════════════
-   RENDER  (mirrors solo v12)
-═══════════════════════════════════ */
+// ── RENDER ──
 function render(){
   if(!G) return;
-  renderBar();
-  renderNames();
-  renderHands();
-  renderTrick();
-  renderUI();
+  renderBar(); renderNames(); renderHands(); renderTrick(); renderUI();
 }
 
 function renderBar(){
-  let td = document.getElementById('trump-disp');
+  let td=document.getElementById('trump-disp');
   if(G.trumpR){td.textContent=G.trump;td.style.color=(G.trump==='♥'||G.trump==='♦')?'#e05555':'#ddd';}
   else{td.textContent='🂠';td.style.color='';}
-  let dt = G.doubled?'<span class="tag d">DOUBLED</span>':'';
-  let mt = G.married?'<span class="tag m">MARRIAGE</span>':'';
-  let by = G.bidWinner>=0?pn(G.bidWinner):(G.bidder>=0?pn(G.bidder):'—');
+  let dt=G.doubled?'<span class="tag d">DOUBLED</span>':'';
+  let mt=G.married?'<span class="tag m">MARRIAGE</span>':'';
+  let by=N(G.bidWinner)>=0&&G.bidWinner!==null?pn(G.bidWinner):(G.bidder>=0?pn(G.bidder):'—');
   document.getElementById('bid-disp').innerHTML=`Bid: ${G.bid} (${by})${dt}${mt}`;
-  let tp = A(G.tp,2);
+  let tp=A(G.tp,2);
   document.getElementById('sc-a').textContent=N(tp[0]);
   document.getElementById('sc-b').textContent=N(tp[1]);
   document.getElementById('lbl-a').textContent=`${pn(0)}&${pn(2)}`;
@@ -419,17 +356,16 @@ function renderNames(){
     let abs=(mySeat+r)%4;
     let el=document.getElementById('nm-'+pos[r]);
     if(!el) continue;
-    el.textContent = r===0?'YOU':pn(abs);
-    el.className   = 'pn'+(N(G.cur)===abs?' cur':'');
+    el.textContent=r===0?'YOU':pn(abs);
+    el.className='pn'+(N(G.cur)===abs?' cur':'');
   }
 }
 
 function renderHands(){
-  // My hand — real cards
-  let me = document.getElementById('h-bottom');
+  let me=document.getElementById('h-bottom');
   me.innerHTML='';
   if(G.phase==='play'||G.phase==='over'){
-    let hand = A(G.hands[mySeat]).filter(x=>x);
+    let hand=A(G.hands[mySeat]).filter(x=>x);
     hand.forEach((c,i)=>{
       let el=mkCard(c);
       if(N(G.cur)===mySeat&&valid(mySeat,c)) el.onclick=()=>play(i);
@@ -437,7 +373,6 @@ function renderHands(){
       me.appendChild(el);
     });
   }
-  // Others — card backs
   ['left','top','right'].forEach((pos,ri)=>{
     let abs=(mySeat+ri+1)%4;
     let el=document.getElementById('h-'+pos);
@@ -451,7 +386,7 @@ function renderTrick(){
   let ta=document.getElementById('trick-area');
   ta.innerHTML='';
   let trick=A(G.trick,4);
-  let pos=['tb','tl','tt','tr']; // bottom left top right relative
+  let pos=['tb','tl','tt','tr'];
   for(let r=0;r<4;r++){
     let abs=(mySeat+r)%4;
     let wrap=document.createElement('div');
@@ -462,9 +397,7 @@ function renderTrick(){
   document.getElementById('cstatus').style.display=trick.filter(x=>x).length?'none':'block';
 }
 
-/* ═══════════════════════════════════
-   PHASE UI
-═══════════════════════════════════ */
+// ── PHASE UI ──
 function renderUI(){
   ov(null);
   document.getElementById('reveal-btn').style.display='none';
@@ -480,12 +413,11 @@ function renderUI(){
 
 function uiBid(){
   ov('bid-ov');
-  // First 4 cards preview
   let prev=document.getElementById('bid-prev');
   prev.innerHTML='';
   A(G.f4[mySeat]).forEach(c=>{if(c)prev.appendChild(mkCard(c));});
-  document.getElementById('bid-val').textContent = G.bidder>=0?G.bid:'—';
-  document.getElementById('bid-who').textContent = G.bidder>=0?pn(G.bidder):'—';
+  document.getElementById('bid-val').textContent=G.bidder>=0?G.bid:'—';
+  document.getElementById('bid-who').textContent=G.bidder>=0?pn(G.bidder):'—';
   let btns=document.getElementById('bid-btns');
   let pp=document.getElementById('bid-pass');
   let wt=document.getElementById('bid-wait');
@@ -512,7 +444,7 @@ function uiBid(){
 function uiTrump(){
   if(N(G.bidWinner)===mySeat){
     ov('trump-ov');
-    document.getElementById('trump-info').textContent=`You won the bid with ${G.bid}. Pick trump suit:`;
+    document.getElementById('trump-info').textContent=`You won the bid with ${G.bid}. Pick trump:`;
   } else {
     ov(null); msg(`${pn(G.bidWinner)} is choosing trump...`);
   }
@@ -523,11 +455,11 @@ function uiDouble(){
   let votes=G.dvotes||{}, myVote=votes[mySeat];
   if(myTeam!==bidTeam&&myVote===undefined){
     ov('dbl-ov');
-    document.getElementById('dbl-info').textContent=`${pn(G.bidWinner)} bid ${G.bid}.\nDouble = ×2 points for the winning team.`;
+    document.getElementById('dbl-info').textContent=`${pn(G.bidWinner)} bid ${G.bid}.\nDouble = ±2 game points instead of ±1.`;
     let db2=document.getElementById('dbl-btns'); db2.innerHTML='';
     let d=document.createElement('button');d.className='btn red';d.textContent='DOUBLE';d.onclick=()=>doDouble(true);
     let p=document.createElement('button');p.className='btn';p.textContent='PASS';p.onclick=()=>doDouble(false);
-    db2.appendChild(d);db2.appendChild(p);
+    db2.appendChild(d); db2.appendChild(p);
     document.getElementById('dbl-wait').style.display='none';
   } else if(myTeam!==bidTeam&&myVote!==undefined){
     ov('dbl-ov');
@@ -544,15 +476,14 @@ function uiPlay(){
   ov(null);
   if(N(G.cur)===mySeat){
     msg('Your turn — play a card');
-    // Show reveal trump button if:
-    // trump not yet revealed AND you are the bid winner OR you can't follow suit
+    // Show REVEAL TRUMP if trump not revealed AND
+    // (bid winner can reveal anytime OR player can't follow led suit)
     if(!G.trumpR){
       let trick=A(G.trick,4);
       let led=null; for(let i=0;i<4;i++) if(trick[i]){led=trick[i];break;}
       let hand=A(G.hands[mySeat]).filter(x=>x);
-      let cantFollow = led && !hand.some(c=>c.suit===led.suit);
-      let isBidWinner = N(G.bidWinner)===mySeat;
-      // Bid winner can reveal anytime; others can reveal only when they can't follow
+      let cantFollow=led&&!hand.some(c=>c.suit===led.suit);
+      let isBidWinner=N(G.bidWinner)===mySeat;
       if(isBidWinner||cantFollow)
         document.getElementById('reveal-btn').style.display='inline-block';
     }
@@ -565,43 +496,47 @@ function uiPlay(){
 
 function uiOver(){
   ov(null);
+  // ── SCORING ──
+  // Bid team: +1 if met, -1 if not. ×2 if doubled.
   let bt=N(G.bidWinner)%2;
   let tp=A(G.tp,2).map(N);
   let met=tp[bt]>=N(G.bid);
+  let mult=G.doubled?2:1;
+  let total=A(G.total,2).map(N);
+  // total was already computed in resolveTrick, just display
   let win=(mySeat%2===bt)===met;
   document.getElementById('res-title').textContent=win?'🎉 Your Team Wins!':'😔 Your Team Loses';
   document.getElementById('res-main').textContent=met?'Bid Met!':'Bid Failed!';
-  let ts=A(G.total,2).map(N);
+  // Show score delta
+  let delta=met?`+${mult}`:`-${mult}`;
+  let oppDelta=met?`-${mult}`:`+${mult}`;
   document.getElementById('res-tbl').innerHTML=`
     <tr><td>Bid</td><td>${G.bid} by ${pn(G.bidWinner)}</td></tr>
-    <tr><td>${pn(0)}&${pn(2)} pts</td><td>${tp[0]}</td></tr>
-    <tr><td>${pn(1)}&${pn(3)} pts</td><td>${tp[1]}</td></tr>
+    <tr><td>${pn(0)}&${pn(2)} card pts</td><td>${tp[0]}</td></tr>
+    <tr><td>${pn(1)}&${pn(3)} card pts</td><td>${tp[1]}</td></tr>
     ${G.doubled?'<tr class="hi"><td>Doubled</td><td>×2</td></tr>':''}
-    ${G.married?'<tr class="hi"><td>Marriage</td><td>−3 bid</td></tr>':''}
+    ${G.married?'<tr class="hi"><td>Marriage</td><td>Bid −3</td></tr>':''}
     <tr><td colspan="2" style="padding-top:8px;border-top:1px solid #252540"></td></tr>
-    <tr class="hi"><td>${pn(0)}&${pn(2)} total</td><td>${ts[0]}</td></tr>
-    <tr class="hi"><td>${pn(1)}&${pn(3)} total</td><td>${ts[1]}</td></tr>
+    <tr class="hi"><td>${pn(0)}&${pn(2)} game pts</td><td>${total[0]}</td></tr>
+    <tr class="hi"><td>${pn(1)}&${pn(3)} game pts</td><td>${total[1]}</td></tr>
   `;
   document.getElementById('result-modal').classList.add('on');
 }
 
-/* ═══════════════════════════════════
-   ACTIONS
-═══════════════════════════════════ */
+// ── ACTIONS ──
 async function doBid(val){
   if(N(G.cur)!==mySeat||G.phase!=='bid'||busy) return;
   busy=true;
   try{
-    let pass  = val===0 ? N(G.pass)+1 : 0;
-    let bidr  = val===0 ? G.bidder    : mySeat;
-    let bid   = val===0 ? N(G.bid)    : val;
-    let next  = (mySeat+1)%4;
-    let done  = (pass>=3&&bidr!==-1)||pass===4;
+    let pass=val===0?N(G.pass)+1:0;
+    let bidr=val===0?G.bidder:mySeat;
+    let bid=val===0?N(G.bid):val;
+    let next=(mySeat+1)%4;
+    let done=(pass>=3&&bidr!==-1)||pass===4;
     if(done){
-      let bw   = bidr===-1?0:bidr;
-      let fb   = bidr===-1?16:bid;
-      // Give everyone all 8 cards
-      let hands= A(G.f4).map((h,p)=>[...A(h),...A(A(G.l4)[p])]);
+      let bw=bidr===-1?0:bidr;
+      let fb=bidr===-1?16:bid;
+      let hands=A(G.f4).map((h,p)=>[...A(h),...A(A(G.l4)[p])]);
       await update(R('game'),{bid:fb,bidder:bw,bidWinner:bw,pass,hands,phase:'trump',cur:bw});
     } else {
       await update(R('game'),{bid,bidder:bidr,pass,cur:next});
@@ -636,39 +571,47 @@ async function play(displayIdx){
   if(N(G.cur)!==mySeat||G.phase!=='play'||busy) return;
   busy=true;
   try{
-    // displayIdx is index into compacted (no-null) hand
     let rawHand=A(G.hands[mySeat]);
-    let card=rawHand.filter(x=>x)[displayIdx];
-    if(!card||!valid(mySeat,card)) return;
+    let compacted=rawHand.filter(x=>x);
+    let card=compacted[displayIdx];
+    if(!card||!valid(mySeat,card)){busy=false;return;}
 
-    // Build new hand without this card
+    // Remove first matching card from raw hand
     let found=false;
     let newHand=rawHand.filter(c=>{
       if(!found&&c&&c.rank===card.rank&&c.suit===card.suit){found=true;return false;}
-      return !!c; // also strip any stale nulls
+      return !!c;
     });
 
-    // Build trick
+    // Build trick safely
     let trick=A(G.trick,4).map(c=>c||null);
     trick[mySeat]=card;
+
+    // Reveal trump automatically if player plays trump card
     let trumpR=G.trumpR||(card.suit===G.trump);
     let cnt=trick.filter(x=>x).length;
     let next=cnt===4?-1:(mySeat+1)%4;
 
     await update(R('game'),{
       [`hands/${mySeat}`]:newHand,
-      trick, trumpR, cur:next,
+      trick,trumpR,cur:next,
     });
 
     if(cnt===4){
-      setTimeout(async()=>{
+      // Clear any existing resolve timer
+      if(resolveTimer) clearTimeout(resolveTimer);
+      resolveTimer=setTimeout(async()=>{
         await resolveTrick();
         busy=false;
+        resolveTimer=null;
       },1000);
-    } else { busy=false; }
-  }catch(e){busy=false;console.error(e);}
+    } else {
+      busy=false;
+    }
+  }catch(e){console.error(e);busy=false;}
 }
 
+// ── RESOLVE TRICK ──
 async function resolveTrick(){
   let snap=await get(R('game'));
   let g=snap.val();
@@ -676,7 +619,6 @@ async function resolveTrick(){
   let trick=A(g.trick,4);
   if(trick.filter(x=>x).length<4) return;
 
-  // Find winner — same as solo v12
   let leader=N(g.leader);
   let ls=trick[leader].suit;
   let winner=leader;
@@ -686,7 +628,7 @@ async function resolveTrick(){
   }
   let team=winner%2;
 
-  // Points — trump cards score 0 if trump not yet revealed
+  // Points — trump cards score 0 if trump not yet revealed when played
   let pts=trick.reduce((s,c)=>{
     if(!c) return s;
     if(!g.trumpR&&c.suit===g.trump) return s;
@@ -700,27 +642,36 @@ async function resolveTrick(){
   if(played===8) tp[team]+=1; // last trick bonus
 
   let isOver=played===8;
+
+  // ── GAME POINT SCORING ──
+  // Bid team +1 if met, -1 if not. ×2 if doubled.
   let total=A(g.total,2).map(N);
   if(isOver){
     let bt=N(g.bidWinner)%2;
     let met=tp[bt]>=N(g.bid);
     let mult=g.doubled?2:1;
-    if(met) total[bt]+=mult; else total[1-bt]+=mult;
+    if(met){
+      total[bt]   += mult;  // bid team gets +mult
+      total[1-bt] -= mult;  // opposing team gets -mult
+    } else {
+      total[bt]   -= mult;  // bid team gets -mult
+      total[1-bt] += mult;  // opposing team gets +mult
+    }
   }
 
   trickMsg(`${pn(winner)} won +${pts}pts`);
 
   await update(R('game'),{
     trick:[null,null,null,null],
-    tp, tw, played,
-    leader:winner, cur:winner,
+    tp,tw,played,
+    leader:winner,cur:winner,
     total,
     phase:isOver?'over':'play',
   });
 }
 
 async function doReveal(){
-  if(N(G.bidWinner)!==mySeat||G.trumpR||G.phase!=='play') return;
+  if(G.trumpR||G.phase!=='play') return;
   await update(R('game'),{trumpR:true});
 }
 
@@ -728,7 +679,7 @@ async function doMarriage(){
   if(!canMarry()) return;
   let newBid=Math.max(15,N(G.bid)-3);
   await update(R('game'),{married:true,bid:newBid});
-  toast('💍 Marriage! Bid −3');
+  toast('💍 Marriage! Bid reduced by 3');
 }
 
 async function playAgain(){
@@ -737,17 +688,10 @@ async function playAgain(){
   screen('lobby-screen'); listenLobby();
 }
 
-/* ═══════════════════════════════════
-   CARD LOGIC  (from solo v12)
-═══════════════════════════════════ */
+// ── CARD LOGIC ──
 function cStr(c,ls,trump,rev){
-  // If trump not revealed, trump cards are treated as normal cards (no special strength)
-  if(!rev){
-    // Before reveal: highest point value wins, rank as tiebreaker
-    // Trump cards treated same as any other card
-    return N(PTS[c.rank])*10+N(ORD[c.rank]);
-  }
-  // After trump revealed: trump > led suit > off-suit
+  // Trump not revealed: trump cards treated as normal cards
+  if(!rev) return N(PTS[c.rank])*10+N(ORD[c.rank]);
   if(c.suit===trump)  return 200+N(ORD[c.rank]);
   if(c.suit===ls)     return 100+N(ORD[c.rank]);
   return N(ORD[c.rank]);
@@ -758,27 +702,26 @@ function valid(p,card){
   if(!G||N(G.cur)!==p||G.phase!=='play') return false;
   let trick=A(G.trick,4);
   let led=null; for(let i=0;i<4;i++) if(trick[i]){led=trick[i];break;}
-  if(!led) return true; // leading — any card ok
+  if(!led) return true; // leading — any card
   let ls=led.suit;
   let hand=A(G.hands[p]).filter(x=>x);
-  // Must follow led suit if possible
+  // Must follow led suit
   if(hand.some(c=>c.suit===ls)) return card.suit===ls;
-  // Can't follow suit:
-  // If trump IS revealed → must play trump if they have it
+  // Can't follow:
+  // Trump revealed → must play trump if available
   if(G.trumpR&&hand.some(c=>c.suit===G.trump)) return card.suit===G.trump;
-  // If trump NOT revealed → any card is valid (trump played = treated as normal)
+  // Trump not revealed → any card valid (trump = normal card)
   return true;
 }
 
 function canMarry(){
   if(!G||!G.trumpR||N(G.bidWinner)!==mySeat||G.married||G.phase!=='play') return false;
   let hand=A(G.hands[mySeat]).filter(x=>x);
-  return hand.some(c=>c.suit===G.trump&&c.rank==='K')&&hand.some(c=>c.suit===G.trump&&c.rank==='Q');
+  return hand.some(c=>c.suit===G.trump&&c.rank==='K')&&
+         hand.some(c=>c.suit===G.trump&&c.rank==='Q');
 }
 
-/* ═══════════════════════════════════
-   CARD ELEMENTS
-═══════════════════════════════════ */
+// ── CARD ELEMENTS ──
 function mkCard(c){
   let el=document.createElement('div');
   el.className='card '+((c.suit==='♥'||c.suit==='♦')?'red':'blk');
@@ -792,9 +735,7 @@ function mkBack(){
   return el;
 }
 
-/* ═══════════════════════════════════
-   EXPOSE
-═══════════════════════════════════ */
+// ── EXPOSE ──
 window.createRoom=createRoom;
 window.joinRoom=joinRoom;
 window.hostStart=hostStart;
