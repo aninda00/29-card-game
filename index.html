@@ -604,28 +604,31 @@ async function doPlayCard(idx){
 }
 
 async function resolveTrick(trick, trumpRevealed){
-  // Re-fetch to make sure we have latest state
+  // Always re-fetch latest state to avoid race conditions
   let snap = await get(rRef('game'));
   let g = snap.val();
-  trick = g.trick || trick;
+  // Only resolve if all 4 cards are actually played
+  let liveTrick = g.trick || [null,null,null,null];
+  if(liveTrick.filter(x=>x).length < 4) return;
+
   let trickLeader = g.trickLeader;
-  let ledSuit = trick[trickLeader].suit;
+  let ledSuit = liveTrick[trickLeader].suit;
   // Find winner
   let winner = trickLeader;
   for(let i=0;i<4;i++){
-    if(!trick[i]||i===winner) continue;
-    if(cardBeats(trick[i], trick[winner], ledSuit, g.trump, g.trumpRevealed)) winner=i;
+    if(!liveTrick[i]||i===winner) continue;
+    if(cardBeats(liveTrick[i], liveTrick[winner], ledSuit, g.trump, g.trumpRevealed)) winner=i;
   }
   let team = winner%2;
-  // Count points (trump cards score 0 if not revealed)
-  let pts = trick.reduce((s,c)=>{
+  // Count points (trump cards score 0 if not yet revealed)
+  let pts = liveTrick.reduce((s,c)=>{
     if(!c) return s;
     if(!g.trumpRevealed && c.suit===g.trump) return s;
     return s+PTS[c.rank];
   },0);
   let newTP = [...(g.trickPoints||[0,0])];
   let newTW = [...(g.tricksWon||[0,0])];
-  newTP[team]+=pts;
+  newTP[team] += pts;
   newTW[team]++;
   let tricksPlayed = (g.tricksPlayed||0)+1;
   if(tricksPlayed===8) newTP[team]+=1; // last trick bonus
@@ -633,19 +636,20 @@ async function resolveTrick(trick, trumpRevealed){
   // Compute total scores if round over
   let totalScores = [...(g.totalScores||[0,0])];
   if(isOver){
-    let bidTeam=g.bidWinner%2;
-    let bidMet=newTP[bidTeam]>=g.bid;
-    let mult=g.doubled?2:1;
-    if(bidMet) totalScores[bidTeam]+=mult;
-    else totalScores[1-bidTeam]+=mult;
+    let bidTeam = g.bidWinner%2;
+    let bidMet  = newTP[bidTeam] >= g.bid;
+    let mult    = g.doubled ? 2 : 1;
+    if(bidMet) totalScores[bidTeam]   += mult;
+    else       totalScores[1-bidTeam] += mult;
   }
+  // ✅ winner leads next trick — set both trickLeader and currentPlayer to winner
   await update(rRef('game'),{
-    trick: [null,null,null,null],
-    trickPoints: newTP,
-    tricksWon: newTW,
+    trick:        [null,null,null,null],
+    trickPoints:  newTP,
+    tricksWon:    newTW,
     tricksPlayed,
-    trickLeader: winner,
-    currentPlayer: winner,
+    trickLeader:  winner,
+    currentPlayer: winner,   // ← this is what was missing
     totalScores,
     phase: isOver ? 'over' : 'play',
   });
@@ -674,19 +678,24 @@ function cardBeats(c, w, ledSuit, trump, trumpRevealed){
   return cardStrength(c,ledSuit,trump,trumpRevealed) > cardStrength(w,ledSuit,trump,trumpRevealed);
 }
 function isValidPlay(p, card){
-  if(!G||G.currentPlayer!==p) return false;
+  if(!G || G.currentPlayer!==p || G.phase!=='play') return false;
   let trick = G.trick||[null,null,null,null];
-  let ledCard=null;
-  for(let i=0;i<4;i++) if(trick[i]){ledCard=trick[i];break;}
+  // Find the led card (first card played this trick)
+  let ledCard = null;
+  for(let i=0;i<4;i++) if(trick[i]){ ledCard=trick[i]; break; }
+  // Leading the trick — any card is valid
   if(!ledCard) return true;
-  let ledSuit=ledCard.suit;
-  let hand=G.hands[p]||[];
-  let hasSuit=hand.some(c=>c&&c.suit===ledSuit);
+  let ledSuit = ledCard.suit;
+  let hand = (G.hands[p]||[]).filter(x=>x);
+  // Must follow led suit if possible
+  let hasSuit = hand.some(c=>c.suit===ledSuit);
   if(hasSuit) return card.suit===ledSuit;
+  // Can't follow suit — must play trump if trump is revealed AND player has trump
   if(G.trumpRevealed){
-    let hasTrump=hand.some(c=>c&&c.suit===G.trump);
+    let hasTrump = hand.some(c=>c.suit===G.trump);
     if(hasTrump) return card.suit===G.trump;
   }
+  // No led suit, no trump (or trump not revealed) — any card is valid
   return true;
 }
 function canDeclareMarriage(){
