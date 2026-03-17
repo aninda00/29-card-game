@@ -592,9 +592,11 @@ async function play(displayIdx){
     let cnt=trick.filter(x=>x).length;
     let next=cnt===4?-1:(mySeat+1)%4;
 
+    // Never touch trumpR here — only doReveal() can change it
     await update(R('game'),{
       [`hands/${mySeat}`]:newHand,
-      trick,trumpR,cur:next,
+      trick,
+      cur:next,
     });
 
     if(cnt===4){
