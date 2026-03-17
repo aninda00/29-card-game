@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>29 Card Game</title>
+
+<!-- !! REPLACE THESE WITH YOUR FIREBASE CONFIG !! -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, get, update, onValue, off }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyDPjd-rIUrp6HCxTSVTLqrWg_klxQDwCtY",
+    authDomain:        "game-29-177ab.firebaseapp.com",
+    databaseURL:       "https://game-29-177ab-default-rtdb.firebaseio.com",
+    projectId:         "game-29-177ab",
+    storageBucket:     "game-29-177ab.firebasestorage.app",
+    messagingSenderId: "412974228088",
+    appId:             "1:412974228088:web:e0cc330bb9a1892eaac38d",
+    measurementId:     "G-BEXTX2K1F2"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  // ── CONSTANTS ──
+  const SUITS = ['♠','♥','♦','♣'];
+  const RANKS = ['7','8','9','10','J','Q','K','A'];
+  const PTS   = {J:3,9:2,A:1,10:1,Q:0,K:0,8:0,7:0};
+  const ORD   = {7:0,8:1,Q:2,K:3,10:4,A:5,9:6,J:7};
+  const PNAMES = ['Player 1','Player 2','Player 3','Player 4'];
+
+  let myRoom = null;
+  let mySeat = null; // 0-3
+  let gameUnsub = null;
+  let G = null; // local mirror of Firebase state
+
+  // ── UTILITIES ──
+  function newDeck(){
+    let d=[];
+    for(let s of SUITS) for(let r of RANKS) d.push({suit:s,rank:r});
+    return d;
+  }
+  function shuffle(a){
+    let b=[...a];
+    for(let i=b.length-1;i>0;i--){let j=Math.random()*(i+1)|0;[b[i],b[j]]=[b[j],b[i]];}
+    return b;
+  }
+  function randCode(){
+    return Math.random().toString(36).slice(2,6).toUpperCase();
+  }
+  function pName(p){ return PNAMES[p]; }
+  function relSeat(abs){ return (abs - mySeat + 4) % 4; } // 0=me,1=left,2=top,3=right
+
+  // ── FIREBASE HELPERS ──
+  function roomRef(path){ return ref(db, `rooms/${myRoom}${path?'/'+path:''}`); }
+  async function getRoom(){ return (await get(roomRef())).val(); }
+  async function updateRoom(data){ await update(roomRef(), data); }
+  async function setRoom(data){ await set(roomRef(), data); }
+
+  // ── SCREENS ──
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+  function setMsg(t){ document.getElementById('msg').textContent = t; }
+  function showToast(t,dur=2000){
+    let el=document.getElementById('toast');
+    el.textContent=t; el.classList.add('show');
+    setTimeout(()=>el.classList.remove('show'),dur);
+  }
+
+  // ── LOBBY ──
+  async function createRoom(){
+    let name = document.getElementById('my-name').value.trim()||'Player 1';
+    let code = randCode();
+    myRoom = code;
+    mySeat  = 0;
+    let roomData = {
+      players: { 0: name },
+      seats: 4,
+      status: 'lobby',
+      host: 0,
+    };
+    await setRoom(roomData);
+    document.getElementById('room-code-display').textContent = code;
+    show('lobby-screen');
+    listenLobby();
+  }
+
+  async function joinRoom(){
+    let name = document.getElementById('my-name').value.trim()||'Player';
+    let code = document.getElementById('room-code').value.trim().toUpperCase();
+    if(!code){ alert('Enter a room code'); return; }
+    myRoom = code;
+    let data = await getRoom();
+    if(!data){ alert('Room not found'); myRoom=null; return; }
+    if(data.status !== 'lobby'){ alert('Game already started'); myRoom=null; return; }
+    let taken = Object.keys(data.players||{}).map(Number);
+    let seat = [0,1,2,3].find(s=>!taken.includes(s));
+    if(seat===undefined){ alert('Room is full'); myRoom=null; return; }
+    mySeat = seat;
+    await update(ref(db,`rooms/${myRoom}/players`),{ [seat]: name });
+    document.getElementById('room-code-display').textContent = code;
+    show('lobby-screen');
+    listenLobby();
+  }
+
+  function listenLobby(){
+    onValue(roomRef(), snap=>{
+      let d = snap.val();
+      if(!d) return;
+      // Update player list
+      let ul = document.getElementById('player-list');
+      ul.innerHTML = '';
+      for(let s=0;s<4;s++){
+        let li = document.createElement('li');
+        li.textContent = d.players?.[s] ? `Seat ${s+1}: ${d.players[s]}${s===mySeat?' (You)':''}` : `Seat ${s+1}: waiting...`;
+        li.style.color = d.players?.[s] ? '#ccc' : '#444';
+        ul.appendChild(li);
+      }
+      // Show start btn only to host when all 4 joined
+      let allJoined = Object.keys(d.players||{}).length === 4;
+      document.getElementById('start-game-btn').style.display = (mySeat===0&&allJoined)?'inline-block':'none';
+      document.getElementById('waiting-msg').textContent = allJoined ? '' : `Waiting for ${4-Object.keys(d.players||{}).length} more player(s)...`;
+      // If game started, enter game
+      if(d.status==='playing' && d.game){
+        off(roomRef()); // stop lobby listener
+        G = d.game;
+        show('main-screen');
+        listenGame();
+        renderGame();
+      }
+    });
+  }
+
+  async function startGameOnline(){
+    let deck = shuffle(newDeck());
+    let hands = [
+      deck.slice(0,4), deck.slice(4,8),
+      deck.slice(8,12), deck.slice(12,16)
+    ];
+    let last4 = [
+      deck.slice(16,20), deck.slice(20,24),
+      deck.slice(24,28), deck.slice(28,32)
+    ];
+    let game = {
+      hands,      // first 4 cards
+      last4,      // remaining 4 (given after bidding)
+      bid: 15, bidder: -1, bidWinner: -1,
+      trump: null, trumpRevealed: false,
+      doubled: false, marriageDeclared: false,
+      trick: [null,null,null,null],
+      trickLeader: 0, currentPlayer: 0,
+      trickPoints: [0,0],
+      tricksWon:   [0,0],
+      tricksPlayed: 0,
+      phase: 'bid',
+      passCount: 0,
+      totalScores: [0,0],
+      log: '',
+    };
+    await update(roomRef(), { status:'playing', game });
+  }
+
+  // ── GAME LISTENER ──
+  function listenGame(){
+    if(gameUnsub) off(roomRef('game'));
+    onValue(roomRef('game'), snap=>{
+      let d = snap.val();
+      if(!d) return;
+      G = d;
+      renderGame();
+    });
+  }
+
+  // ── RENDER ──
+  function renderGame(){
+    if(!G) return;
+    updateInfoBar();
+    renderAllHands();
+    renderTrick();
+    renderControls();
+    updateNames();
+  }
+
+  function updateInfoBar(){
+    let td = document.getElementById('trump-display');
+    if(G.trumpRevealed){
+      td.textContent = G.trump;
+      td.style.color = (G.trump==='♥'||G.trump==='♦')?'#e05555':'#ddd';
+    } else { td.textContent='🂠'; td.style.color=''; }
+    let dTag = G.doubled?'<span class="tag double">DOUBLED</span>':'';
+    let mTag = G.marriageDeclared?'<span class="tag marriage">MARRIAGE</span>':'';
+    document.getElementById('bid-display').innerHTML =
+      G.bidWinner>=0 ? `Bid: ${G.bid} (${pName(G.bidWinner)})${dTag}${mTag}` : `Bid: ${G.bid}`;
+    document.getElementById('score-a').textContent = G.trickPoints[0];
+    document.getElementById('score-b').textContent = G.trickPoints[1];
+    // Team labels based on my seat
+    let myTeam = mySeat%2===0?'You & P3':'You & P2';
+    let oppTeam = mySeat%2===0?'P2 & P4':'P1 & P3';
+    document.getElementById('label-a').textContent = mySeat%2===0?'YOU & P3':'P1 & P3';
+    document.getElementById('label-b').textContent = mySeat%2===0?'P2 & P4':'YOU & P4';
+  }
+
+  function updateNames(){
+    let pos = ['bottom','left','top','right'];
+    for(let rel=0;rel<4;rel++){
+      let abs = (mySeat+rel)%4;
+      let el = document.getElementById('name-'+pos[rel]);
+      if(!el) continue;
+      el.textContent = rel===0?'YOU':pName(abs);
+      el.className = 'player-name'+(G.currentPlayer===abs?' active-turn':'');
+    }
+  }
+
+  function renderAllHands(){
+    // My hand (bottom) — show real cards
+    let myHand = G.hands[mySeat]||[];
+    let cont = document.getElementById('hand-bottom');
+    cont.innerHTML='';
+    myHand.forEach((c,i)=>{
+      if(!c) return;
+      let el = makeCardEl(c);
+      let myTurn = G.currentPlayer===mySeat;
+      if(myTurn && isValidPlay(mySeat,c)){
+        el.onclick = ()=>doPlayCard(i);
+      } else {
+        el.classList.add('disabled');
+      }
+      cont.appendChild(el);
+    });
+    // Other hands — show backs
+    ['left','top','right'].forEach((pos,ri)=>{
+      let abs = (mySeat+ri+1)%4;
+      let cont2 = document.getElementById('hand-'+pos);
+      cont2.innerHTML='';
+      let n = (G.hands[abs]||[]).filter(x=>x).length;
+      for(let i=0;i<n;i++) cont2.appendChild(makeBackCard());
+    });
+  }
+
+  function renderTrick(){
+    let ta = document.getElementById('trick-area');
+    ta.innerHTML='';
+    let positions = ['pos-bottom','pos-left','pos-top','pos-right'];
+    for(let rel=0;rel<4;rel++){
+      let abs=(mySeat+rel)%4;
+      let wrap=document.createElement('div');
+      wrap.className=positions[rel];
+      if(G.trick[abs]){
+        let el=makeCardEl(G.trick[abs]);
+        el.style.cursor='default';
+        wrap.appendChild(el);
+      }
+      ta.appendChild(wrap);
+    }
+    document.getElementById('status').style.display=G.trick.filter(x=>x).length?'none':'block';
+  }
+
+  function renderControls(){
+    let phase = G.phase;
+    let myTurn = G.currentPlayer===mySeat;
+
+    // BID UI
+    let bidArea = document.getElementById('bid-area');
+    bidArea.innerHTML='';
+    if(phase==='bid' && myTurn){
+      let btns = document.createElement('div');
+      btns.style.cssText='display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:300px;';
+      for(let b=G.bid+1;b<=28;b++){
+        let btn=document.createElement('button');
+        btn.className='btn'; btn.textContent=b;
+        btn.onclick=()=>doBid(b);
+        btn.style.cssText='padding:6px 12px;font-size:0.75rem;';
+        btns.appendChild(btn);
+      }
+      bidArea.appendChild(btns);
+      if(G.bidder!==-1||G.passCount>0){
+        let pb=document.createElement('button');
+        pb.className='btn'; pb.textContent='PASS';
+        pb.style.marginTop='8px';
+        pb.onclick=()=>doBid(0);
+        bidArea.appendChild(pb);
+      }
+      setMsg('Your turn to bid');
+    } else if(phase==='bid'){
+      setMsg(G.currentPlayer>=0?`${pName(G.currentPlayer)} is bidding...`:'Bidding...');
+    }
+
+    // TRUMP UI
+    let trumpArea = document.getElementById('trump-area');
+    trumpArea.innerHTML='';
+    if(phase==='trump' && G.bidWinner===mySeat){
+      let sb=document.createElement('div');
+      sb.style.cssText='display:flex;gap:10px;';
+      SUITS.forEach(s=>{
+        let btn=document.createElement('button');
+        btn.className='suit-btn'; btn.textContent=s;
+        btn.onclick=()=>doChooseTrump(s);
+        sb.appendChild(btn);
+      });
+      trumpArea.appendChild(sb);
+      setMsg('Choose trump suit');
+    } else if(phase==='trump'){
+      setMsg(`${pName(G.bidWinner)} is choosing trump...`);
+    }
+
+    // DOUBLE UI
+    let doubleArea = document.getElementById('double-area');
+    doubleArea.innerHTML='';
+    if(phase==='double'){
+      let bidTeam = G.bidWinner%2;
+      let myTeam  = mySeat%2;
+      if(myTeam !== bidTeam && !G[`doubleVote_${mySeat}`]){
+        let db2=document.createElement('button');
+        db2.className='btn danger'; db2.textContent='DOUBLE';
+        db2.onclick=()=>doVoteDouble(true);
+        let pb=document.createElement('button');
+        pb.className='btn'; pb.textContent='PASS';
+        pb.onclick=()=>doVoteDouble(false);
+        doubleArea.appendChild(db2);
+        doubleArea.appendChild(pb);
+        setMsg(`${pName(G.bidWinner)} bid ${G.bid}. Double?`);
+      } else if(myTeam===bidTeam){
+        setMsg('Opponents deciding to double...');
+      } else {
+        setMsg('Waiting for teammate...');
+      }
+    }
+
+    // PLAY controls
+    document.getElementById('reveal-trump-btn').style.display =
+      (phase==='play' && myTurn && !G.trumpRevealed && G.bidWinner===mySeat)?'inline-block':'none';
+    document.getElementById('marriage-btn').style.display =
+      (phase==='play' && myTurn && canDeclareMarriage())?'inline-block':'none';
+
+    if(phase==='play' && myTurn && !bidArea.children.length && !trumpArea.children.length){
+      setMsg('Your turn — play a card');
+    } else if(phase==='play' && !myTurn){
+      setMsg(`${pName(G.currentPlayer)}'s turn`);
+    }
+
+    // ROUND OVER
+    if(phase==='over') showRoundOver();
+  }
+
+  // ── ACTIONS (write to Firebase) ──
+  async function doBid(val){
+    let upd = {};
+    if(val===0){ upd['game/passCount'] = (G.passCount||0)+1; }
+    else { upd['game/bid']=val; upd['game/bidder']=mySeat; upd['game/passCount']=0; }
+    // Advance turn
+    let next = (mySeat+1)%4;
+    upd['game/currentPlayer'] = next;
+    await update(roomRef(), upd);
+    // Check if bidding done (Firebase listener will pick it up, but host resolves)
+    if(mySeat===0 || true){ // any player can check
+      let snap = await get(roomRef('game'));
+      let g = snap.val();
+      let done=(g.passCount>=3&&g.bidder!==-1)||g.passCount===4;
+      if(done) await resolveBidding(g);
+    }
+  }
+
+  async function resolveBidding(g){
+    let bidder = g.bidder===-1?0:g.bidder;
+    let bid    = g.bidder===-1?16:g.bid;
+    // Give everyone full 8 cards
+    let hands = [];
+    for(let p=0;p<4;p++) hands[p]=[...g.hands[p],...g.last4[p]];
+    await update(roomRef('game'),{
+      bidWinner: bidder,
+      bid,
+      hands,
+      currentPlayer: bidder,
+      phase: bidder===mySeat? 'trump' : 'trump', // everyone sees trump phase
+    });
+  }
+
+  async function doChooseTrump(suit){
+    await update(roomRef('game'),{
+      trump: suit,
+      phase: 'double',
+      currentPlayer: -1,
+    });
+    // Check double votes after short delay
+    setTimeout(checkDoubleVotes,300);
+  }
+
+  async function doVoteDouble(val){
+    let upd={};
+    upd[`game/doubleVote_${mySeat}`]=val;
+    await update(roomRef(), upd);
+    setTimeout(checkDoubleVotes,300);
+  }
+
+  async function checkDoubleVotes(){
+    let snap = await get(roomRef('game'));
+    let g = snap.val();
+    if(g.phase!=='double') return;
+    let bidTeam = g.bidWinner%2;
+    // Find opposing team seats
+    let oppSeats=[0,1,2,3].filter(s=>s%2!==bidTeam);
+    let allVoted = oppSeats.every(s=>g[`doubleVote_${s}`]!==undefined);
+    if(!allVoted) return;
+    let doubled = oppSeats.some(s=>g[`doubleVote_${s}`]===true);
+    await update(roomRef('game'),{
+      doubled,
+      phase:'play',
+      currentPlayer: g.bidWinner,
+    });
+  }
+
+  async function doPlayCard(idx){
+    if(G.currentPlayer!==mySeat) return;
+    let card = G.hands[mySeat][idx];
+    if(!isValidPlay(mySeat,card)) return;
+    let newHand = G.hands[mySeat].filter((_,i)=>i!==idx);
+    let newTrick = [...(G.trick||[null,null,null,null])];
+    newTrick[mySeat] = card;
+    let trumpRevealed = G.trumpRevealed||(!G.trumpRevealed&&card.suit===G.trump);
+    let upd={};
+    upd[`game/hands/${mySeat}`]=newHand;
+    upd[`game/trick`]=newTrick;
+    upd[`game/trumpRevealed`]=trumpRevealed;
+    let played=newTrick.filter(x=>x).length;
+    if(played===4){
+      upd[`game/currentPlayer`]=-1; // lock while resolving
+    } else {
+      upd[`game/currentPlayer`]=(mySeat+1)%4;
+    }
+    await update(roomRef(),upd);
+    if(played===4){
+      setTimeout(()=>resolveOnlineTrick(newTrick,trumpRevealed),900);
+    }
+  }
+
+  async function resolveOnlineTrick(trick, trumpRevealed){
+    let snap = await get(roomRef('game'));
+    let g = snap.val();
+    // Compute winner
+    let trickLeader = g.trickLeader;
+    let ledSuit = trick[trickLeader].suit;
+    let winner = trickLeader;
+    for(let i=0;i<4;i++){
+      if(!trick[i]||i===winner) continue;
+      if(beatsCard(trick[i],trick[winner],ledSuit,g.trump,g.trumpRevealed)) winner=i;
+    }
+    let team=winner%2;
+    let pts=trick.reduce((s,c)=>{
+      if(!c) return s;
+      if(!g.trumpRevealed&&c.suit===g.trump) return s;
+      return s+PTS[c.rank];
+    },0);
+    let newTP=[...(g.trickPoints||[0,0])];
+    let newTW=[...(g.tricksWon||[0,0])];
+    newTP[team]+=pts;
+    newTW[team]++;
+    let tricksPlayed=(g.tricksPlayed||0)+1;
+    if(tricksPlayed===8) newTP[team]+=1;
+    let upd={};
+    upd['game/trick']=[null,null,null,null];
+    upd['game/trickPoints']=newTP;
+    upd['game/tricksWon']=newTW;
+    upd['game/tricksPlayed']=tricksPlayed;
+    upd['game/trickLeader']=winner;
+    upd['game/currentPlayer']=winner;
+    upd['game/lastTrickWinner']=winner;
+    upd['game/lastTrickPts']=pts;
+    if(tricksPlayed===8) upd['game/phase']='over';
+    await update(roomRef(),upd);
+  }
+
+  async function doRevealTrump(){
+    await update(roomRef('game'),{trumpRevealed:true});
+  }
+
+  async function doDeclareMarriage(){
+    if(!canDeclareMarriage()) return;
+    let newBid = Math.max(15, G.bid-3);
+    await update(roomRef('game'),{marriageDeclared:true, bid:newBid});
+    showToast('💍 Marriage! Bid reduced by 3');
+  }
+
+  // ── CARD LOGIC (pure, no Firebase) ──
+  function cardStrength(c,ledSuit,trump,trumpRevealed){
+    if(!trumpRevealed){ return PTS[c.rank]*10+ORD[c.rank]; }
+    if(c.suit===trump) return 200+ORD[c.rank];
+    if(c.suit===ledSuit) return 100+ORD[c.rank];
+    return ORD[c.rank];
+  }
+  function beatsCard(c,w,ledSuit,trump,trumpRevealed){
+    return cardStrength(c,ledSuit,trump,trumpRevealed)>cardStrength(w,ledSuit,trump,trumpRevealed);
+  }
+  function isValidPlay(p,card){
+    if(!G||G.currentPlayer!==p) return false;
+    let trick=G.trick||[null,null,null,null];
+    let ledCard=null;
+    for(let i=0;i<4;i++) if(trick[i]){ledCard=trick[i];break;}
+    if(!ledCard) return true;
+    let ledSuit=ledCard.suit;
+    let hand=G.hands[p]||[];
+    let hasSuit=hand.some(c=>c&&c.suit===ledSuit);
+    if(hasSuit) return card.suit===ledSuit;
+    if(G.trumpRevealed){
+      let hasTrump=hand.some(c=>c&&c.suit===G.trump);
+      if(hasTrump) return card.suit===G.trump;
+    }
+    return true;
+  }
+  function canDeclareMarriage(){
+    if(!G||!G.trumpRevealed||G.bidWinner!==mySeat||G.marriageDeclared) return false;
+    let hand=G.hands[mySeat]||[];
+    return hand.some(c=>c&&c.suit===G.trump&&c.rank==='K') &&
+           hand.some(c=>c&&c.suit===G.trump&&c.rank==='Q');
+  }
+
+  // ── ROUND OVER ──
+  function showRoundOver(){
+    if(!G) return;
+    let bidTeam=G.bidWinner%2;
+    let bidMet=(G.trickPoints[bidTeam]||0)>=G.bid;
+    let mult=G.doubled?2:1;
+    let ts=[...(G.totalScores||[0,0])];
+    // Only host updates total scores once
+    let myTeamWin = (mySeat%2===bidTeam)===bidMet;
+    document.getElementById('ov-title').textContent = myTeamWin?'🎉 Your Team Wins!':'😔 Your Team Loses';
+    document.getElementById('ov-main').textContent  = bidMet?'Bid Met!':'Bid Failed!';
+    let rows=`
+      <tr><td>Bid</td><td>${G.bid} by ${pName(G.bidWinner)}</td></tr>
+      <tr><td>Team A pts</td><td>${G.trickPoints[0]}</td></tr>
+      <tr><td>Team B pts</td><td>${G.trickPoints[1]}</td></tr>
+      ${G.doubled?'<tr class="highlight"><td>Doubled</td><td>×2</td></tr>':''}
+      ${G.marriageDeclared?'<tr class="highlight"><td>Marriage</td><td>−3 bid</td></tr>':''}
+    `;
+    document.getElementById('ov-table').innerHTML=rows;
+    showOverlay();
+  }
+
+  async function playAgain(){
+    hideOverlay();
+    // Only host resets
+    if(mySeat===0){
+      await update(roomRef(),{status:'lobby', game:null});
+    }
+    show('lobby-screen');
+  }
+
+  // ── CARD ELEMENTS ──
+  function makeCardEl(c){
+    let el=document.createElement('div');
+    el.className='card '+((c.suit==='♥'||c.suit==='♦')?'red':'black');
+    el.innerHTML=`<span class="rank">${c.rank}</span><span class="suit-sym">${c.suit}</span>`;
+    return el;
+  }
+  function makeBackCard(){
+    let el=document.createElement('div');
+    el.className='card back small';
+    el.innerHTML='<div class="back-pattern"></div>';
+    return el;
+  }
+
+  function showOverlay(){ document.getElementById('overlay').classList.add('active'); }
+  function hideOverlay(){ document.getElementById('overlay').classList.remove('active'); }
+
+  // ── EXPOSE TO HTML ──
+  window.createRoom    = createRoom;
+  window.joinRoom      = joinRoom;
+  window.startGameOnline = startGameOnline;
+  window.doRevealTrump = doRevealTrump;
+  window.doDeclareMarriage = doDeclareMarriage;
+  window.playAgain     = playAgain;
+</script>
+
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#1a1a2e;color:#e0e0e0;font-family:'Segoe UI',sans-serif;height:100vh;overflow:hidden;}
+  .screen{display:none;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:14px;}
+  .screen.active{display:flex;}
+  h1{font-size:2rem;font-weight:300;letter-spacing:4px;color:#fff;}
+  .subtitle{font-size:0.85rem;color:#888;letter-spacing:2px;}
+  .btn{background:transparent;border:1px solid #444;color:#ccc;padding:10px 24px;border-radius:4px;cursor:pointer;font-size:0.85rem;letter-spacing:1px;transition:all 0.2s;}
+  .btn:hover{border-color:#aaa;color:#fff;}
+  .btn.primary{border-color:#7c6fff;color:#7c6fff;}
+  .btn.primary:hover{background:#7c6fff22;}
+  .btn.danger{border-color:#e05555;color:#e05555;}
+  .btn.danger:hover{background:#e0555522;}
+  .btn.gold{border-color:#c9a84c;color:#c9a84c;}
+  input{background:#242438;border:1px solid #333;color:#ccc;padding:10px 14px;border-radius:4px;font-size:0.85rem;outline:none;width:200px;}
+  input:focus{border-color:#7c6fff;}
+  .code-display{font-size:2rem;letter-spacing:8px;color:#7c6fff;font-weight:300;}
+  #player-list{list-style:none;font-size:0.8rem;line-height:2;}
+  .suit-btn{width:56px;height:56px;border-radius:8px;border:1px solid #333;background:transparent;font-size:1.5rem;cursor:pointer;transition:all 0.2s;}
+  .suit-btn:hover{border-color:#7c6fff;background:#7c6fff22;transform:scale(1.05);}
+
+  /* MAIN */
+  #main-screen{display:none;flex-direction:column;height:100vh;background:#1a1a2e;}
+  #main-screen.active{display:flex;}
+  #info-bar{display:flex;justify-content:space-between;align-items:center;padding:6px 16px;border-bottom:1px solid #252540;font-size:0.75rem;flex-wrap:wrap;gap:4px;}
+  .team-score{display:flex;gap:16px;}
+  .ts{display:flex;flex-direction:column;align-items:center;}
+  .ts .label{font-size:0.6rem;color:#555;letter-spacing:1px;}
+  .ts .val{font-size:1rem;color:#ccc;}
+  #trump-display{font-size:1.2rem;}
+  #bid-display{font-size:0.72rem;color:#888;text-align:center;}
+  #table{flex:1;display:grid;grid-template-areas:". top ." "left center right" ". bottom .";grid-template-columns:120px 1fr 120px;grid-template-rows:110px 1fr 110px;padding:8px;gap:4px;}
+  .player-area{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;}
+  .player-area.bottom{grid-area:bottom;}
+  .player-area.top{grid-area:top;}
+  .player-area.left{grid-area:left;}
+  .player-area.right{grid-area:right;}
+  .player-name{font-size:0.65rem;letter-spacing:1px;color:#555;}
+  .player-name.active-turn{color:#7c6fff;}
+  .hand{display:flex;justify-content:center;}
+  .hand.horizontal{flex-direction:row;flex-wrap:wrap;}
+  .hand.vertical{flex-direction:column;}
+  .card{width:42px;height:58px;border-radius:5px;border:1px solid #333;background:#242438;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;user-select:none;flex-shrink:0;margin:0 1px;}
+  .card:hover{transform:translateY(-6px);box-shadow:0 8px 20px #0005;}
+  .card.disabled{opacity:0.35;cursor:not-allowed;}
+  .card.disabled:hover{transform:none;box-shadow:none;}
+  .card.back{background:#1e1e34;border-color:#2a2a45;cursor:default;}
+  .card.back:hover{transform:none;}
+  .card .rank{font-size:0.8rem;font-weight:600;line-height:1;}
+  .card .suit-sym{font-size:0.9rem;line-height:1;}
+  .card.red .rank,.card.red .suit-sym{color:#e05555;}
+  .card.black .rank,.card.black .suit-sym{color:#ddd;}
+  .card.small{width:30px;height:42px;margin:1px;}
+  .card.small .rank{font-size:0.6rem;}
+  .card.small .suit-sym{font-size:0.7rem;}
+  .back-pattern{width:26px;height:36px;border-radius:3px;background:repeating-linear-gradient(45deg,#2a2a50,#2a2a50 2px,#1e1e38 2px,#1e1e38 6px);}
+  #center{grid-area:center;display:flex;align-items:center;justify-content:center;position:relative;}
+  #trick-area{display:grid;grid-template-areas:". top ." "left mid right" ". bottom .";grid-template-columns:56px 56px 56px;grid-template-rows:66px 66px 66px;gap:2px;}
+  #trick-area .pos-top{grid-area:top;display:flex;align-items:center;justify-content:center;}
+  #trick-area .pos-bottom{grid-area:bottom;display:flex;align-items:center;justify-content:center;}
+  #trick-area .pos-left{grid-area:left;display:flex;align-items:center;justify-content:center;}
+  #trick-area .pos-right{grid-area:right;display:flex;align-items:center;justify-content:center;}
+  #status{position:absolute;font-size:0.7rem;color:#333;letter-spacing:1px;pointer-events:none;}
+  #controls{padding:8px 16px;border-top:1px solid #252540;display:flex;flex-direction:column;align-items:center;gap:8px;min-height:60px;}
+  #bid-area,#trump-area,#double-area{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+  #msg{font-size:0.75rem;color:#888;text-align:center;}
+  .tag{display:inline-block;font-size:0.6rem;padding:1px 6px;border-radius:10px;letter-spacing:1px;margin-left:4px;vertical-align:middle;}
+  .tag.double{border:1px solid #e05555;color:#e05555;}
+  .tag.marriage{border:1px solid #c9a84c;color:#c9a84c;}
+  #overlay{display:none;position:fixed;inset:0;background:#0009;z-index:100;align-items:center;justify-content:center;}
+  #overlay.active{display:flex;}
+  .modal{background:#1e1e34;border:1px solid #2a2a45;border-radius:8px;padding:28px 36px;text-align:center;max-width:320px;}
+  .modal h2{font-size:1.1rem;font-weight:400;margin-bottom:8px;}
+  .modal .big{font-size:1.6rem;color:#7c6fff;margin:8px 0;}
+  .score-table{width:100%;font-size:0.78rem;margin-bottom:16px;border-collapse:collapse;}
+  .score-table td{padding:4px 8px;color:#888;}
+  .score-table td:first-child{text-align:left;}
+  .score-table td:last-child{text-align:right;color:#ccc;}
+  .score-table tr.highlight td{color:#7c6fff;}
+  #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e1e34;border:1px solid #333;padding:8px 20px;border-radius:20px;font-size:0.78rem;color:#ccc;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:200;}
+  #toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home-screen" class="screen active">
+  <h1>29</h1>
+  <div class="subtitle">ONLINE MULTIPLAYER</div>
+  <div style="height:8px;"></div>
+  <input id="my-name" placeholder="Your name" maxlength="16"/>
+  <div style="display:flex;gap:10px;margin-top:4px;">
+    <button class="btn primary" onclick="createRoom()">CREATE ROOM</button>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+    <input id="room-code" placeholder="Room code" maxlength="4" style="width:120px;text-transform:uppercase;letter-spacing:4px;"/>
+    <button class="btn" onclick="joinRoom()">JOIN</button>
+  </div>
+  <div style="font-size:0.7rem;color:#444;margin-top:8px;">4 players · 2 teams · Share code with friends</div>
+</div>
+
+<!-- LOBBY -->
+<div id="lobby-screen" class="screen">
+  <div class="subtitle">ROOM CODE</div>
+  <div class="code-display" id="room-code-display">----</div>
+  <div style="font-size:0.72rem;color:#555;">Share this code with your friends</div>
+  <div style="height:4px;"></div>
+  <ul id="player-list"></ul>
+  <div id="waiting-msg" style="font-size:0.75rem;color:#555;"></div>
+  <button class="btn primary" id="start-game-btn" style="display:none;" onclick="startGameOnline()">START GAME</button>
+</div>
+
+<!-- MAIN GAME -->
+<div id="main-screen" class="screen">
+  <div id="info-bar">
+    <div class="team-score">
+      <div class="ts"><div class="label" id="label-a">TEAM A</div><div class="val" id="score-a">0</div></div>
+      <div class="ts"><div class="label" id="label-b">TEAM B</div><div class="val" id="score-b">0</div></div>
+    </div>
+    <div id="bid-display">Bid: —</div>
+    <div id="trump-display">🂠</div>
+  </div>
+  <div id="table">
+    <div class="player-area top">
+      <div class="player-name" id="name-top">P3</div>
+      <div class="hand horizontal" id="hand-top"></div>
+    </div>
+    <div class="player-area left">
+      <div class="player-name" id="name-left">P2</div>
+      <div class="hand vertical" id="hand-left"></div>
+    </div>
+    <div id="center">
+      <div id="trick-area"></div>
+      <div id="status">—</div>
+    </div>
+    <div class="player-area right">
+      <div class="player-name" id="name-right">P4</div>
+      <div class="hand vertical" id="hand-right"></div>
+    </div>
+    <div class="player-area bottom">
+      <div class="player-name" id="name-bottom">YOU</div>
+      <div class="hand horizontal" id="hand-bottom"></div>
+    </div>
+  </div>
+  <div id="controls">
+    <div id="msg">—</div>
+    <div id="bid-area"></div>
+    <div id="trump-area"></div>
+    <div id="double-area"></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn" id="reveal-trump-btn" style="display:none;" onclick="doRevealTrump()">REVEAL TRUMP</button>
+      <button class="btn gold" id="marriage-btn" style="display:none;" onclick="doDeclareMarriage()">MARRIAGE</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay">
+  <div class="modal">
+    <h2 id="ov-title">Round Over</h2>
+    <div class="big" id="ov-main"></div>
+    <table class="score-table" id="ov-table"></table>
+    <button class="btn primary" onclick="playAgain()">PLAY AGAIN</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+</body>
+</html>
