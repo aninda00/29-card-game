@@ -587,8 +587,8 @@ async function play(displayIdx){
     let trick=A(G.trick,4).map(c=>c||null);
     trick[mySeat]=card;
 
-    // Reveal trump automatically if player plays trump card
-    let trumpR=G.trumpR||(card.suit===G.trump);
+    // Trump NEVER auto-reveals — only reveals via REVEAL TRUMP button
+    let trumpR=G.trumpR;
     let cnt=trick.filter(x=>x).length;
     let next=cnt===4?-1:(mySeat+1)%4;
 
@@ -677,21 +677,9 @@ async function doReveal(){
 
 async function doMarriage(){
   if(!canMarry()) return;
-  let bidTeam = N(G.bidWinner)%2;
-  let myTeam  = mySeat%2;
-  let newBid;
-  let note;
-  if(myTeam===bidTeam){
-    // Same team as bid winner → bid goes DOWN by 3 (easier)
-    newBid = Math.max(15, N(G.bid)-3);
-    note   = '💍 Marriage! Bid reduced by 3';
-  } else {
-    // Opposing team → bid goes UP by 3 (harder for bid team)
-    newBid = Math.min(28, N(G.bid)+3);
-    note   = '💍 Marriage! Bid increased by 3';
-  }
-  await update(R('game'),{married:true, bid:newBid});
-  toast(note);
+  let newBid=Math.max(15,N(G.bid)-3);
+  await update(R('game'),{married:true,bid:newBid});
+  toast('💍 Marriage! Bid reduced by 3');
 }
 
 async function playAgain(){
@@ -727,9 +715,7 @@ function valid(p,card){
 }
 
 function canMarry(){
-  if(!G||!G.trumpR||G.married||G.phase!=='play') return false;
-  // Any player on their turn can call marriage if they have K+Q of trump
-  if(N(G.cur)!==mySeat) return false;
+  if(!G||!G.trumpR||N(G.bidWinner)!==mySeat||G.married||G.phase!=='play') return false;
   let hand=A(G.hands[mySeat]).filter(x=>x);
   return hand.some(c=>c.suit===G.trump&&c.rank==='K')&&
          hand.some(c=>c.suit===G.trump&&c.rank==='Q');
