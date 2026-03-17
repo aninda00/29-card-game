@@ -70,6 +70,22 @@
   #controls{padding:8px 16px;border-top:1px solid #252540;display:flex;flex-direction:column;align-items:center;gap:8px;min-height:70px;justify-content:center;}
   #action-area{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center;}
   #msg{font-size:0.75rem;color:#888;text-align:center;}
+  /* Bid overlay */
+  #bid-overlay{display:none;position:fixed;inset:0;background:#000a;z-index:50;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+  #bid-overlay.active{display:flex;}
+  #bid-overlay .bo-title{font-size:0.7rem;letter-spacing:2px;color:#555;}
+  #bid-overlay .bo-cards{display:flex;gap:4px;margin-bottom:4px;}
+  #bid-overlay .bo-current{font-size:0.85rem;color:#aaa;}
+  #bid-overlay .bo-current span{color:#7c6fff;font-weight:600;}
+  #bid-overlay .bo-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:300px;}
+  #bid-overlay .bo-btns .btn{padding:7px 12px;font-size:0.78rem;}
+  #bid-overlay .bo-wait{font-size:0.85rem;color:#555;letter-spacing:1px;}
+  /* Trump overlay */
+  #trump-overlay{display:none;position:fixed;inset:0;background:#000a;z-index:50;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+  #trump-overlay.active{display:flex;}
+  /* Double overlay */
+  #double-overlay{display:none;position:fixed;inset:0;background:#000a;z-index:50;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+  #double-overlay.active{display:flex;}
   .tag{display:inline-block;font-size:0.6rem;padding:1px 6px;border-radius:10px;letter-spacing:1px;margin-left:4px;vertical-align:middle;}
   .tag.double{border:1px solid #e05555;color:#e05555;}
   .tag.marriage{border:1px solid #c9a84c;color:#c9a84c;}
@@ -154,7 +170,34 @@
   </div>
 </div>
 
-<!-- OVERLAY -->
+<!-- BID OVERLAY -->
+<div id="bid-overlay">
+  <div class="bo-title">YOUR FIRST 4 CARDS</div>
+  <div class="bo-cards" id="bo-cards"></div>
+  <div class="bo-current">Current bid: <span id="bo-bid-val">—</span> by <span id="bo-bid-by">—</span></div>
+  <div class="bo-btns" id="bo-btns"></div>
+  <div id="bo-wait" class="bo-wait" style="display:none;"></div>
+</div>
+
+<!-- TRUMP OVERLAY -->
+<div id="trump-overlay">
+  <div class="subtitle">CHOOSE TRUMP</div>
+  <div style="font-size:0.8rem;color:#666;" id="trump-ov-info"></div>
+  <div style="display:flex;gap:12px;">
+    <button class="suit-btn" onclick="doChooseTrump('♠')">♠</button>
+    <button class="suit-btn" onclick="doChooseTrump('♥')">♥</button>
+    <button class="suit-btn" onclick="doChooseTrump('♦')">♦</button>
+    <button class="suit-btn" onclick="doChooseTrump('♣')">♣</button>
+  </div>
+</div>
+
+<!-- DOUBLE OVERLAY -->
+<div id="double-overlay">
+  <div class="subtitle">DOUBLE?</div>
+  <div style="font-size:0.8rem;color:#666;text-align:center;line-height:1.7;" id="double-ov-info"></div>
+  <div style="display:flex;gap:12px;" id="double-ov-btns"></div>
+  <div style="font-size:0.75rem;color:#444;" id="double-ov-wait"></div>
+</div>
 <div id="overlay">
   <div class="modal">
     <h2 id="ov-title">Round Over</h2>
@@ -379,82 +422,90 @@ function renderTrick(){
   document.getElementById('status').style.display=trick.filter(x=>x).length?'none':'block';
 }
 
-function renderControls(){
-  let aa = document.getElementById('action-area');
-  aa.innerHTML = '';
+function showOverlays(){
+  let phase = G.phase;
+  // Hide all overlays first
+  document.getElementById('bid-overlay').classList.remove('active');
+  document.getElementById('trump-overlay').classList.remove('active');
+  document.getElementById('double-overlay').classList.remove('active');
 
-  // ── BID PHASE ──
-  if(G.phase==='bid'){
+  if(phase==='bid'){
+    let bo = document.getElementById('bid-overlay');
+    bo.classList.add('active');
+    // Preview cards
+    let bc = document.getElementById('bo-cards');
+    bc.innerHTML='';
+    (G.first4[mySeat]||[]).forEach(c=>bc.appendChild(makeCardEl(c,false)));
+    // Bid value
+    document.getElementById('bo-bid-val').textContent = G.bid>15||G.bidder>=0 ? G.bid : '—';
+    document.getElementById('bo-bid-by').textContent  = G.bidder>=0 ? pName(G.bidder) : '—';
+    let btns = document.getElementById('bo-btns');
+    let wait = document.getElementById('bo-wait');
+    btns.innerHTML=''; wait.style.display='none';
     if(G.currentPlayer===mySeat){
-      setMsg(`Your turn to bid — Current: ${G.bid>15?G.bid:'no bid yet'}`);
       // Bid buttons
-      let wrap=document.createElement('div');
-      wrap.style.cssText='display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:300px;';
       for(let b=G.bid+1;b<=28;b++){
         let btn=document.createElement('button');
         btn.className='btn'; btn.textContent=b;
-        btn.style.cssText='padding:6px 11px;font-size:0.75rem;';
+        btn.style.cssText='padding:7px 12px;font-size:0.78rem;';
         btn.onclick=()=>doBid(b);
-        wrap.appendChild(btn);
+        btns.appendChild(btn);
       }
-      aa.appendChild(wrap);
-      // Pass button (not on very first bid if no one has bid)
-      if(G.bidder!==-1 || G.passCount>0){
+      // Pass button — not on very first action if no bid yet
+      if(G.bidder!==-1||G.passCount>0){
         let pb=document.createElement('button');
-        pb.className='btn'; pb.textContent='PASS';
-        pb.onclick=()=>doBid(0);
-        aa.appendChild(pb);
+        pb.className='btn'; pb.textContent='PASS'; pb.onclick=()=>doBid(0);
+        btns.appendChild(pb);
       }
     } else {
-      setMsg(G.currentPlayer>=0 ? `${pName(G.currentPlayer)} is bidding...` : 'Bidding...');
+      wait.style.display='block';
+      wait.textContent = G.currentPlayer>=0 ? `${pName(G.currentPlayer).toUpperCase()} IS BIDDING...` : 'WAITING...';
     }
   }
 
-  // ── TRUMP PHASE ──
-  else if(G.phase==='trump'){
+  else if(phase==='trump'){
     if(G.bidWinner===mySeat){
-      setMsg('Choose your trump suit');
-      let wrap=document.createElement('div');
-      wrap.style.cssText='display:flex;gap:10px;';
-      SUITS.forEach(s=>{
-        let btn=document.createElement('button');
-        btn.className='suit-btn'; btn.textContent=s;
-        btn.onclick=()=>doChooseTrump(s);
-        wrap.appendChild(btn);
-      });
-      aa.appendChild(wrap);
+      document.getElementById('trump-overlay').classList.add('active');
+      document.getElementById('trump-ov-info').textContent=`You won the bid with ${G.bid}. Pick your trump:`;
     } else {
+      // Show waiting in controls
       setMsg(`${pName(G.bidWinner)} is choosing trump...`);
     }
   }
 
-  // ── DOUBLE PHASE ──
-  else if(G.phase==='double'){
-    let bidTeam  = G.bidWinner%2;
-    let myTeam   = mySeat%2;
-    let myVote   = G.doubleVotes ? G.doubleVotes[mySeat] : undefined;
-    if(myTeam !== bidTeam && myVote===undefined){
-      setMsg(`${pName(G.bidWinner)} bid ${G.bid}. Do you want to double?`);
-      let db2=document.createElement('button'); db2.className='btn danger'; db2.textContent='DOUBLE'; db2.onclick=()=>doVoteDouble(true);
-      let pb=document.createElement('button');  pb.className='btn';         pb.textContent='PASS';   pb.onclick=()=>doVoteDouble(false);
-      aa.appendChild(db2); aa.appendChild(pb);
-    } else if(myTeam !== bidTeam && myVote!==undefined){
-      setMsg('Waiting for your teammate to decide...');
+  else if(phase==='double'){
+    let bidTeam = G.bidWinner%2;
+    let myTeam  = mySeat%2;
+    let myVote  = G.doubleVotes ? G.doubleVotes[mySeat] : undefined;
+    if(myTeam!==bidTeam && myVote===undefined){
+      document.getElementById('double-overlay').classList.add('active');
+      document.getElementById('double-ov-info').textContent=
+        `${pName(G.bidWinner)} bid ${G.bid}.\nDouble = ×2 points for winner.`;
+      let db2 = document.getElementById('double-ov-btns');
+      db2.innerHTML='';
+      let d=document.createElement('button'); d.className='btn danger'; d.textContent='DOUBLE'; d.onclick=()=>doVoteDouble(true);
+      let p=document.createElement('button'); p.className='btn'; p.textContent='PASS'; p.onclick=()=>doVoteDouble(false);
+      db2.appendChild(d); db2.appendChild(p);
+      document.getElementById('double-ov-wait').textContent='';
+    } else if(myTeam!==bidTeam && myVote!==undefined){
+      document.getElementById('double-overlay').classList.add('active');
+      document.getElementById('double-ov-info').textContent='Waiting for your teammate...';
+      document.getElementById('double-ov-btns').innerHTML='';
+      document.getElementById('double-ov-wait').textContent=`Your vote: ${myVote?'DOUBLE':'PASS'}`;
     } else {
       setMsg('Opponents are deciding whether to double...');
     }
   }
 
-  // ── PLAY PHASE ──
-  else if(G.phase==='play'){
+  else if(phase==='play'){
+    let aa = document.getElementById('action-area');
+    aa.innerHTML='';
     if(G.currentPlayer===mySeat){
       setMsg('Your turn — play a card');
-      // Reveal trump button
-      if(!G.trumpRevealed && G.bidWinner===mySeat){
+      if(!G.trumpRevealed&&G.bidWinner===mySeat){
         let rb=document.createElement('button'); rb.className='btn'; rb.textContent='REVEAL TRUMP';
         rb.onclick=doRevealTrump; aa.appendChild(rb);
       }
-      // Marriage button
       if(canDeclareMarriage()){
         let mb=document.createElement('button'); mb.className='btn gold'; mb.textContent='💍 MARRIAGE';
         mb.onclick=doDeclareMarriage; aa.appendChild(mb);
@@ -464,6 +515,8 @@ function renderControls(){
     }
   }
 }
+
+function renderControls(){ showOverlays(); }
 
 // ── ACTIONS ──
 async function doBid(val){
@@ -690,10 +743,12 @@ function makeBackCard(){
 }
 
 // ── EXPOSE ──
-window.createRoom    = createRoom;
-window.joinRoom      = joinRoom;
-window.hostStartGame = hostStartGame;
-window.playAgain     = playAgain;
+window.createRoom     = createRoom;
+window.joinRoom       = joinRoom;
+window.hostStartGame  = hostStartGame;
+window.playAgain      = playAgain;
+window.doChooseTrump  = doChooseTrump;
+window.doVoteDouble   = doVoteDouble;
 </script>
 </body>
 </html>
