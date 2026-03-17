@@ -23,9 +23,8 @@
   input:focus{border-color:#7c6fff;}
   .code-display{font-size:2rem;letter-spacing:8px;color:#7c6fff;font-weight:300;}
   #player-list{list-style:none;font-size:0.8rem;line-height:2.2;}
-  .suit-btn{width:56px;height:56px;border-radius:8px;border:1px solid #333;background:transparent;font-size:1.5rem;cursor:pointer;transition:all 0.2s;}
-  .suit-btn:hover{border-color:#7c6fff;background:#7c6fff22;transform:scale(1.05);}
-  /* MAIN */
+
+  /* MAIN GAME */
   #main-screen{display:none;flex-direction:column;height:100vh;background:#1a1a2e;}
   #main-screen.active{display:flex;}
   #info-bar{display:flex;justify-content:space-between;align-items:center;padding:6px 16px;border-bottom:1px solid #252540;font-size:0.75rem;flex-wrap:wrap;gap:4px;}
@@ -67,32 +66,30 @@
   #trick-area .pos-left{grid-area:left;display:flex;align-items:center;justify-content:center;}
   #trick-area .pos-right{grid-area:right;display:flex;align-items:center;justify-content:center;}
   #status{position:absolute;font-size:0.7rem;color:#333;letter-spacing:1px;pointer-events:none;}
-  #controls{padding:8px 16px;border-top:1px solid #252540;display:flex;flex-direction:column;align-items:center;gap:8px;min-height:70px;justify-content:center;}
-  #action-area{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center;}
+  #trick-result{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#1e1e34cc;border:1px solid #333;border-radius:6px;padding:6px 14px;font-size:0.75rem;color:#aaa;pointer-events:none;opacity:0;transition:opacity 0.3s;z-index:10;}
+  #trick-result.show{opacity:1;}
+  #controls{padding:8px 16px;border-top:1px solid #252540;display:flex;justify-content:center;align-items:center;gap:10px;min-height:48px;flex-wrap:wrap;}
   #msg{font-size:0.75rem;color:#888;text-align:center;}
-  /* Bid overlay */
-  #bid-overlay{display:none;position:fixed;inset:0;background:#000a;z-index:50;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
-  #bid-overlay.active{display:flex;}
-  #bid-overlay .bo-title{font-size:0.7rem;letter-spacing:2px;color:#555;}
-  #bid-overlay .bo-cards{display:flex;gap:4px;margin-bottom:4px;}
-  #bid-overlay .bo-current{font-size:0.85rem;color:#aaa;}
-  #bid-overlay .bo-current span{color:#7c6fff;font-weight:600;}
-  #bid-overlay .bo-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:300px;}
-  #bid-overlay .bo-btns .btn{padding:7px 12px;font-size:0.78rem;}
-  #bid-overlay .bo-wait{font-size:0.85rem;color:#555;letter-spacing:1px;}
-  /* Trump overlay */
-  #trump-overlay{display:none;position:fixed;inset:0;background:#000a;z-index:50;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
-  #trump-overlay.active{display:flex;}
-  /* Double overlay */
-  #double-overlay{display:none;position:fixed;inset:0;background:#000a;z-index:50;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
-  #double-overlay.active{display:flex;}
   .tag{display:inline-block;font-size:0.6rem;padding:1px 6px;border-radius:10px;letter-spacing:1px;margin-left:4px;vertical-align:middle;}
   .tag.double{border:1px solid #e05555;color:#e05555;}
   .tag.marriage{border:1px solid #c9a84c;color:#c9a84c;}
-  /* preview hand during bidding */
-  #preview-cards{display:flex;gap:4px;justify-content:center;margin-bottom:4px;}
-  #overlay{display:none;position:fixed;inset:0;background:#0009;z-index:100;align-items:center;justify-content:center;}
-  #overlay.active{display:flex;}
+
+  /* OVERLAYS */
+  .ov{display:none;position:fixed;inset:0;background:#000b;z-index:50;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+  .ov.active{display:flex;}
+  #bid-ov .preview{display:flex;gap:4px;margin-bottom:4px;}
+  #bid-ov .cur{font-size:0.9rem;color:#aaa;}
+  #bid-ov .cur span{color:#7c6fff;font-weight:600;}
+  #bid-ov .bid-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:300px;}
+  #bid-ov .bid-btns .btn{padding:7px 12px;font-size:0.78rem;}
+  .wait-txt{font-size:0.85rem;color:#444;letter-spacing:2px;}
+  .suit-row{display:flex;gap:12px;}
+  .suit-btn{width:58px;height:58px;border-radius:8px;border:1px solid #333;background:transparent;font-size:1.6rem;cursor:pointer;transition:all 0.2s;}
+  .suit-btn:hover{border-color:#7c6fff;background:#7c6fff22;transform:scale(1.05);}
+
+  /* ROUND OVER */
+  #round-ov{display:none;position:fixed;inset:0;background:#0009;z-index:100;align-items:center;justify-content:center;}
+  #round-ov.active{display:flex;}
   .modal{background:#1e1e34;border:1px solid #2a2a45;border-radius:8px;padding:28px 36px;text-align:center;max-width:320px;}
   .modal h2{font-size:1.1rem;font-weight:400;margin-bottom:8px;}
   .modal .big{font-size:1.6rem;color:#7c6fff;margin:8px 0;}
@@ -100,7 +97,7 @@
   .score-table td{padding:4px 8px;color:#888;}
   .score-table td:first-child{text-align:left;}
   .score-table td:last-child{text-align:right;color:#ccc;}
-  .score-table tr.highlight td{color:#7c6fff;}
+  .score-table tr.hi td{color:#7c6fff;}
   #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e1e34;border:1px solid #333;padding:8px 20px;border-radius:20px;font-size:0.78rem;color:#ccc;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:200;}
   #toast.show{opacity:1;}
 </style>
@@ -111,79 +108,69 @@
 <div id="home-screen" class="screen active">
   <h1>29</h1>
   <div class="subtitle">ONLINE MULTIPLAYER</div>
-  <div style="height:8px;"></div>
+  <div style="height:8px"></div>
   <input id="my-name" placeholder="Your name" maxlength="16"/>
-  <button class="btn primary" onclick="createRoom()" style="margin-top:4px;">CREATE ROOM</button>
-  <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
-    <input id="room-code-input" placeholder="Room code" maxlength="4" style="width:130px;text-transform:uppercase;letter-spacing:4px;"/>
+  <button class="btn primary" onclick="createRoom()" style="margin-top:4px">CREATE ROOM</button>
+  <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+    <input id="room-input" placeholder="Room code" maxlength="4" style="width:130px;text-transform:uppercase;letter-spacing:4px"/>
     <button class="btn" onclick="joinRoom()">JOIN</button>
   </div>
-  <div style="font-size:0.7rem;color:#444;margin-top:4px;">4 players · 2 teams · P1&P3 vs P2&P4</div>
+  <div style="font-size:0.7rem;color:#444;margin-top:4px">4 players · P1&P3 vs P2&P4</div>
 </div>
 
 <!-- LOBBY -->
 <div id="lobby-screen" class="screen">
   <div class="subtitle">ROOM CODE</div>
-  <div class="code-display" id="room-code-display">----</div>
-  <div style="font-size:0.72rem;color:#555;margin-bottom:4px;">Share this with friends</div>
+  <div class="code-display" id="room-code-disp">----</div>
+  <div style="font-size:0.72rem;color:#555;margin-bottom:4px">Share with friends</div>
   <ul id="player-list"></ul>
-  <div id="waiting-msg" style="font-size:0.75rem;color:#555;margin-top:4px;"></div>
-  <button class="btn primary" id="start-game-btn" style="display:none;margin-top:8px;" onclick="hostStartGame()">START GAME</button>
+  <div id="wait-msg" style="font-size:0.75rem;color:#555;margin-top:4px"></div>
+  <button class="btn primary" id="start-btn" style="display:none;margin-top:8px" onclick="hostStart()">START GAME</button>
 </div>
 
-<!-- MAIN -->
+<!-- MAIN GAME -->
 <div id="main-screen" class="screen">
   <div id="info-bar">
     <div class="team-score">
-      <div class="ts"><div class="label" id="label-a">P1 & P3</div><div class="val" id="score-a">0</div></div>
-      <div class="ts"><div class="label" id="label-b">P2 & P4</div><div class="val" id="score-b">0</div></div>
+      <div class="ts"><div class="label" id="lbl-a">P1&P3</div><div class="val" id="score-a">0</div></div>
+      <div class="ts"><div class="label" id="lbl-b">P2&P4</div><div class="val" id="score-b">0</div></div>
     </div>
     <div id="bid-display">Bid: —</div>
     <div id="trump-display">🂠</div>
   </div>
   <div id="table">
-    <div class="player-area top">
-      <div class="player-name" id="name-top">—</div>
-      <div class="hand horizontal" id="hand-top"></div>
-    </div>
-    <div class="player-area left">
-      <div class="player-name" id="name-left">—</div>
-      <div class="hand vertical" id="hand-left"></div>
-    </div>
+    <div class="player-area top"><div class="player-name" id="nm-top">—</div><div class="hand horizontal" id="h-top"></div></div>
+    <div class="player-area left"><div class="player-name" id="nm-left">—</div><div class="hand vertical" id="h-left"></div></div>
     <div id="center">
       <div id="trick-area"></div>
       <div id="status">—</div>
+      <div id="trick-result"></div>
     </div>
-    <div class="player-area right">
-      <div class="player-name" id="name-right">—</div>
-      <div class="hand vertical" id="hand-right"></div>
-    </div>
-    <div class="player-area bottom">
-      <div class="player-name" id="name-bottom">YOU</div>
-      <div id="preview-cards"></div>
-      <div class="hand horizontal" id="hand-bottom"></div>
-    </div>
+    <div class="player-area right"><div class="player-name" id="nm-right">—</div><div class="hand vertical" id="h-right"></div></div>
+    <div class="player-area bottom"><div class="player-name" id="nm-bottom">YOU</div><div class="hand horizontal" id="h-bottom"></div></div>
   </div>
   <div id="controls">
     <div id="msg">—</div>
-    <div id="action-area"></div>
+    <button class="btn" id="reveal-btn" style="display:none" onclick="doRevealTrump()">REVEAL TRUMP</button>
+    <button class="btn gold" id="marriage-btn" style="display:none" onclick="doMarriage()">💍 MARRIAGE</button>
   </div>
 </div>
 
 <!-- BID OVERLAY -->
-<div id="bid-overlay">
-  <div class="bo-title">YOUR FIRST 4 CARDS</div>
-  <div class="bo-cards" id="bo-cards"></div>
-  <div class="bo-current">Current bid: <span id="bo-bid-val">—</span> by <span id="bo-bid-by">—</span></div>
-  <div class="bo-btns" id="bo-btns"></div>
-  <div id="bo-wait" class="bo-wait" style="display:none;"></div>
+<div id="bid-ov" class="ov">
+  <div class="subtitle">BIDDING</div>
+  <div style="font-size:0.7rem;color:#555;letter-spacing:1px">YOUR FIRST 4 CARDS</div>
+  <div class="preview" id="bid-preview"></div>
+  <div class="cur">Current bid: <span id="cur-bid">—</span> by <span id="cur-bidder">—</span></div>
+  <div class="bid-btns" id="bid-btns"></div>
+  <div id="bid-wait" class="wait-txt" style="display:none"></div>
 </div>
 
 <!-- TRUMP OVERLAY -->
-<div id="trump-overlay">
+<div id="trump-ov" class="ov">
   <div class="subtitle">CHOOSE TRUMP</div>
-  <div style="font-size:0.8rem;color:#666;" id="trump-ov-info"></div>
-  <div style="display:flex;gap:12px;">
+  <div style="font-size:0.8rem;color:#666" id="trump-ov-info">You won the bid. Pick trump:</div>
+  <div class="suit-row">
     <button class="suit-btn" onclick="doChooseTrump('♠')">♠</button>
     <button class="suit-btn" onclick="doChooseTrump('♥')">♥</button>
     <button class="suit-btn" onclick="doChooseTrump('♦')">♦</button>
@@ -192,24 +179,27 @@
 </div>
 
 <!-- DOUBLE OVERLAY -->
-<div id="double-overlay">
+<div id="double-ov" class="ov">
   <div class="subtitle">DOUBLE?</div>
-  <div style="font-size:0.8rem;color:#666;text-align:center;line-height:1.7;" id="double-ov-info"></div>
-  <div style="display:flex;gap:12px;" id="double-ov-btns"></div>
-  <div style="font-size:0.75rem;color:#444;" id="double-ov-wait"></div>
+  <div style="font-size:0.8rem;color:#666;text-align:center;line-height:1.8" id="double-info"></div>
+  <div style="display:flex;gap:12px" id="double-btns"></div>
+  <div class="wait-txt" id="double-wait" style="display:none"></div>
 </div>
-<div id="overlay">
+
+<!-- ROUND OVER -->
+<div id="round-ov">
   <div class="modal">
     <h2 id="ov-title">Round Over</h2>
     <div class="big" id="ov-main"></div>
     <table class="score-table" id="ov-table"></table>
-    <button class="btn primary" style="margin-top:8px;" onclick="playAgain()">PLAY AGAIN</button>
+    <button class="btn primary" style="margin-top:8px" onclick="playAgain()">PLAY AGAIN</button>
   </div>
 </div>
+
 <div id="toast"></div>
 
 <script type="module">
-import { initializeApp }          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, get, update, onValue, off }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
@@ -222,434 +212,374 @@ const firebaseConfig = {
   messagingSenderId: "412974228088",
   appId:             "1:412974228088:web:e0cc330bb9a1892eaac38d",
 };
-
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-// ── CONSTANTS ──
-const SUITS  = ['♠','♥','♦','♣'];
-const RANKS  = ['7','8','9','10','J','Q','K','A'];
-const PTS    = {7:0,8:0,9:2,10:1,J:3,Q:0,K:0,A:1};
-const ORD    = {7:0,8:1,Q:2,K:3,10:4,A:5,9:6,J:7}; // J>9>A>10>K>Q>8>7
+// ── CONSTANTS (same as solo v12) ──
+const SUITS = ['♠','♥','♦','♣'];
+const RANKS = ['7','8','9','10','J','Q','K','A'];
+const PTS   = {7:0,8:0,9:2,10:1,J:3,Q:0,K:0,A:1};
+const ORD   = {7:0,8:1,Q:2,K:3,10:4,A:5,9:6,J:7};
 
-let myRoom = null;
-let mySeat = null;
-let G      = null;
-let players = {};
+let myRoom=null, mySeat=null, G=null, players={};
 
-// ── REFS ──
-function rRef(path){ return ref(db, path ? `rooms/${myRoom}/${path}` : `rooms/${myRoom}`); }
+// ── FIREBASE ──
+const rRef = p => ref(db, p ? `rooms/${myRoom}/${p}` : `rooms/${myRoom}`);
 
-// ── UTILS ──
-function shuffle(a){ let b=[...a]; for(let i=b.length-1;i>0;i--){let j=Math.random()*(i+1)|0;[b[i],b[j]]=[b[j],b[i]];} return b; }
-function randCode(){ return Math.random().toString(36).slice(2,6).toUpperCase(); }
-function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-function setMsg(t){ document.getElementById('msg').textContent = t; }
-function showToast(t){ let e=document.getElementById('toast'); e.textContent=t; e.classList.add('show'); setTimeout(()=>e.classList.remove('show'),2500); }
-function pName(seat){ return players[seat] || `P${seat+1}`; }
-function relPos(abs){ return (abs - mySeat + 4) % 4; } // 0=me(bottom),1=left,2=top,3=right
+function shuffle(a){let b=[...a];for(let i=b.length-1;i>0;i--){let j=Math.random()*(i+1)|0;[b[i],b[j]]=[b[j],b[i]];}return b;}
+function randCode(){return Math.random().toString(36).slice(2,6).toUpperCase();}
+function pName(s){return players[s]||`P${s+1}`;}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function showOv(id){['bid-ov','trump-ov','double-ov'].forEach(o=>document.getElementById(o).classList.remove('active'));if(id)document.getElementById(id).classList.add('active');}
+function toast(t){let e=document.getElementById('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2500);}
 
 // ── LOBBY ──
 async function createRoom(){
-  let name = document.getElementById('my-name').value.trim() || 'Player 1';
-  myRoom = randCode(); mySeat = 0;
-  await set(rRef(), { players:{0:name}, status:'lobby' });
-  document.getElementById('room-code-display').textContent = myRoom;
-  show('lobby-screen');
-  listenLobby();
+  let name=document.getElementById('my-name').value.trim()||'Player 1';
+  myRoom=randCode(); mySeat=0;
+  await set(rRef(),{players:{0:name},status:'lobby'});
+  document.getElementById('room-code-disp').textContent=myRoom;
+  showScreen('lobby-screen'); listenLobby();
 }
-
 async function joinRoom(){
-  let name = document.getElementById('my-name').value.trim() || 'Player';
-  let code = document.getElementById('room-code-input').value.trim().toUpperCase();
-  if(!code){ alert('Enter a room code'); return; }
-  myRoom = code;
-  let snap = await get(rRef());
-  let data = snap.val();
-  if(!data){ alert('Room not found'); myRoom=null; return; }
-  if(data.status !== 'lobby'){ alert('Game already in progress'); myRoom=null; return; }
-  let taken = Object.keys(data.players||{}).map(Number);
-  let seat = [0,1,2,3].find(s=>!taken.includes(s));
-  if(seat===undefined){ alert('Room is full'); myRoom=null; return; }
-  mySeat = seat;
-  await update(rRef('players'), { [seat]: name });
-  document.getElementById('room-code-display').textContent = myRoom;
-  show('lobby-screen');
-  listenLobby();
+  let name=document.getElementById('my-name').value.trim()||'Player';
+  let code=document.getElementById('room-input').value.trim().toUpperCase();
+  if(!code){alert('Enter a room code');return;}
+  myRoom=code;
+  let d=(await get(rRef())).val();
+  if(!d){alert('Room not found');myRoom=null;return;}
+  if(d.status!=='lobby'){alert('Game already started');myRoom=null;return;}
+  let taken=Object.keys(d.players||{}).map(Number);
+  let seat=[0,1,2,3].find(s=>!taken.includes(s));
+  if(seat===undefined){alert('Room full');myRoom=null;return;}
+  mySeat=seat;
+  await update(rRef('players'),{[seat]:name});
+  document.getElementById('room-code-disp').textContent=myRoom;
+  showScreen('lobby-screen'); listenLobby();
 }
-
 function listenLobby(){
-  onValue(rRef(), snap=>{
-    let d = snap.val(); if(!d) return;
-    players = d.players || {};
-    let ul = document.getElementById('player-list');
-    ul.innerHTML = '';
+  onValue(rRef(),snap=>{
+    let d=snap.val(); if(!d) return;
+    players=d.players||{};
+    let ul=document.getElementById('player-list');
+    ul.innerHTML='';
     for(let s=0;s<4;s++){
       let li=document.createElement('li');
-      li.textContent = players[s] ? `Seat ${s+1}: ${players[s]}${s==mySeat?' (You)':''}` : `Seat ${s+1}: waiting...`;
-      li.style.color = players[s]?'#ccc':'#333';
+      li.textContent=players[s]?`Seat ${s+1}: ${players[s]}${s==mySeat?' (You)':''}`:`Seat ${s+1}: waiting...`;
+      li.style.color=players[s]?'#ccc':'#333';
       ul.appendChild(li);
     }
-    let count = Object.keys(players).length;
-    document.getElementById('waiting-msg').textContent = count<4 ? `Waiting for ${4-count} more...` : 'All players ready!';
-    document.getElementById('start-game-btn').style.display = (mySeat===0 && count===4) ? 'inline-block':'none';
-    if(d.status==='playing' && d.game){
-      off(rRef());
-      G = d.game; players = d.players||{};
-      show('main-screen');
-      listenGame();
-      renderGame();
+    let cnt=Object.keys(players).length;
+    document.getElementById('wait-msg').textContent=cnt<4?`Waiting for ${4-cnt} more...`:'All players ready!';
+    document.getElementById('start-btn').style.display=(mySeat===0&&cnt===4)?'inline-block':'none';
+    if(d.status==='playing'&&d.game){
+      off(rRef()); G=d.game; players=d.players||{};
+      showScreen('main-screen'); listenGame(); renderAll();
     }
   });
 }
 
-// ── START GAME (host only) ──
-async function hostStartGame(){
-  let deck = shuffle( SUITS.flatMap(s=>RANKS.map(r=>({suit:s,rank:r}))) );
-  // Deal 4 cards first, 4 more after bidding
-  let first4 = [deck.slice(0,4),  deck.slice(4,8),  deck.slice(8,12), deck.slice(12,16)];
-  let last4  = [deck.slice(16,20),deck.slice(20,24),deck.slice(24,28),deck.slice(28,32)];
-  let game = {
-    first4, last4,
-    hands: first4.map(h=>[...h]),  // everyone starts with first 4
-    bid: 15, bidder: -1, bidWinner: -1,
-    trump: null, trumpRevealed: false,
-    doubled: false, marriageDeclared: false,
-    trick: [null,null,null,null],
-    trickLeader: 0, currentPlayer: 0,
-    trickPoints: [0,0], tricksWon: [0,0], tricksPlayed: 0,
-    phase: 'bid',   // bid | trump | double | play | over
-    passCount: 0,
-    totalScores: [0,0],
-    doubleVotes: {},
+// ── HOST STARTS ──
+async function hostStart(){
+  let deck=shuffle(SUITS.flatMap(s=>RANKS.map(r=>({suit:s,rank:r}))));
+  let f4=[deck.slice(0,4),deck.slice(4,8),deck.slice(8,12),deck.slice(12,16)];
+  let l4=[deck.slice(16,20),deck.slice(20,24),deck.slice(24,28),deck.slice(28,32)];
+  let game={
+    first4:f4, last4:l4,
+    hands:[...f4.map(h=>h.map(c=>({...c})))],
+    bid:15, bidder:-1, bidWinner:-1,
+    trump:null, trumpRevealed:false,
+    doubled:false, marriageDeclared:false,
+    trick:[null,null,null,null],
+    trickLeader:0, currentPlayer:0,
+    trickPoints:[0,0], tricksWon:[0,0], tricksPlayed:0,
+    phase:'bid', passCount:0,
+    totalScores:[0,0], doubleVotes:{},
   };
-  await update(rRef(), { status:'playing', game });
+  await update(rRef(),{status:'playing',game});
 }
 
 // ── GAME LISTENER ──
 function listenGame(){
-  onValue(rRef('game'), snap=>{
-    let d = snap.val(); if(!d) return;
-    G = d;
-    renderGame();
-    if(G.phase==='over') showRoundOver();
+  onValue(rRef('game'),snap=>{
+    let d=snap.val(); if(!d) return;
+    G=d; renderAll();
   });
 }
 
-// ── RENDER ──
-function renderGame(){
+// ── RENDER ALL (mirrors solo v12 structure) ──
+function renderAll(){
   if(!G) return;
   renderInfoBar();
-  renderHands();
-  renderTrick();
   renderNames();
-  renderControls();
+  renderHands();
+  renderTrickArea();
+  renderPhaseUI();
 }
 
 function renderInfoBar(){
-  let td = document.getElementById('trump-display');
-  if(G.trumpRevealed){ td.textContent=G.trump; td.style.color=(G.trump==='♥'||G.trump==='♦')?'#e05555':'#ddd'; }
-  else { td.textContent='🂠'; td.style.color=''; }
-  let dTag = G.doubled ? '<span class="tag double">DOUBLED</span>' : '';
-  let mTag = G.marriageDeclared ? '<span class="tag marriage">MARRIAGE</span>' : '';
-  let bidBy = G.bidWinner>=0 ? pName(G.bidWinner) : (G.bidder>=0?pName(G.bidder):'—');
-  document.getElementById('bid-display').innerHTML = `Bid: ${G.bid} (${bidBy})${dTag}${mTag}`;
-  document.getElementById('score-a').textContent = G.trickPoints[0];
-  document.getElementById('score-b').textContent = G.trickPoints[1];
-  document.getElementById('label-a').textContent = `${pName(0)} & ${pName(2)}`;
-  document.getElementById('label-b').textContent = `${pName(1)} & ${pName(3)}`;
+  let td=document.getElementById('trump-display');
+  if(G.trumpRevealed){td.textContent=G.trump;td.style.color=(G.trump==='♥'||G.trump==='♦')?'#e05555':'#ddd';}
+  else{td.textContent='🂠';td.style.color='';}
+  let dTag=G.doubled?'<span class="tag double">DOUBLED</span>':'';
+  let mTag=G.marriageDeclared?'<span class="tag marriage">MARRIAGE</span>':'';
+  let by=G.bidWinner>=0?pName(G.bidWinner):(G.bidder>=0?pName(G.bidder):'—');
+  document.getElementById('bid-display').innerHTML=`Bid: ${G.bid} (${by})${dTag}${mTag}`;
+  document.getElementById('score-a').textContent=G.trickPoints[0];
+  document.getElementById('score-b').textContent=G.trickPoints[1];
+  document.getElementById('lbl-a').textContent=`${pName(0)}&${pName(2)}`;
+  document.getElementById('lbl-b').textContent=`${pName(1)}&${pName(3)}`;
 }
 
 function renderNames(){
-  let positions = ['bottom','left','top','right'];
+  let pos=['bottom','left','top','right'];
   for(let rel=0;rel<4;rel++){
-    let abs = (mySeat+rel)%4;
-    let el = document.getElementById('name-'+positions[rel]);
-    if(!el) continue;
-    el.textContent = rel===0 ? 'YOU' : pName(abs);
-    el.className = 'player-name' + (G.currentPlayer===abs ? ' active-turn' : '');
+    let abs=(mySeat+rel)%4;
+    let el=document.getElementById('nm-'+pos[rel]);
+    if(!el) return;
+    el.textContent=rel===0?'YOU':pName(abs);
+    el.className='player-name'+(G.currentPlayer===abs?' active-turn':'');
   }
 }
 
 function renderHands(){
-  // Show preview cards during bidding (first 4)
-  let previewEl = document.getElementById('preview-cards');
-  previewEl.innerHTML = '';
-  if(G.phase==='bid'){
-    let preview = G.first4 ? G.first4[mySeat] : [];
-    (preview||[]).forEach(c=>{ if(c) previewEl.appendChild(makeCardEl(c,true)); });
-  }
-
-  // My hand — real cards (only show during play phase)
-  let myHandEl = document.getElementById('hand-bottom');
-  myHandEl.innerHTML = '';
-  if(G.phase==='play' || G.phase==='over'){
-    let myHand = G.hands[mySeat]||[];
-    myHand.forEach((c,i)=>{
+  // Bottom = my real cards (only during play)
+  let myEl=document.getElementById('h-bottom');
+  myEl.innerHTML='';
+  if(G.phase==='play'||G.phase==='over'){
+    let hand=arr(G.hands[mySeat]);
+    hand.forEach((c,i)=>{
       if(!c) return;
-      let el = makeCardEl(c);
-      if(G.currentPlayer===mySeat && isValidPlay(mySeat,c)){
-        el.onclick = ()=>doPlayCard(i);
-      } else {
-        el.classList.add('disabled');
-      }
-      myHandEl.appendChild(el);
+      let el=makeCard(c);
+      if(G.currentPlayer===mySeat&&isValid(mySeat,c)) el.onclick=()=>playCard(i);
+      else el.classList.add('disabled');
+      myEl.appendChild(el);
     });
   }
-
-  // Other players — back of cards
+  // Other players — card backs
   ['left','top','right'].forEach((pos,ri)=>{
-    let abs = (mySeat+ri+1)%4;
-    let el = document.getElementById('hand-'+pos);
+    let abs=(mySeat+ri+1)%4;
+    let el=document.getElementById('h-'+pos);
     el.innerHTML='';
-    let n = (G.hands[abs]||[]).filter(x=>x).length;
-    for(let i=0;i<n;i++) el.appendChild(makeBackCard());
+    let n=arr(G.hands[abs]).filter(x=>x).length;
+    for(let i=0;i<n;i++) el.appendChild(makeBack());
   });
 }
 
-function renderTrick(){
-  let ta = document.getElementById('trick-area');
+function renderTrickArea(){
+  let ta=document.getElementById('trick-area');
   ta.innerHTML='';
-  let positions = ['pos-bottom','pos-left','pos-top','pos-right'];
-  let trick = G.trick||[null,null,null,null];
+  let trick=arr(G.trick);
+  let pos=['pos-bottom','pos-left','pos-top','pos-right'];
   for(let rel=0;rel<4;rel++){
     let abs=(mySeat+rel)%4;
     let wrap=document.createElement('div');
-    wrap.className=positions[rel];
-    if(trick[abs]){ let ce=makeCardEl(trick[abs]); ce.style.cursor='default'; wrap.appendChild(ce); }
+    wrap.className=pos[rel];
+    if(trick[abs]){let ce=makeCard(trick[abs]);ce.style.cursor='default';wrap.appendChild(ce);}
     ta.appendChild(wrap);
   }
   document.getElementById('status').style.display=trick.filter(x=>x).length?'none':'block';
 }
 
-function showOverlays(){
-  let phase = G.phase;
-  // Hide all overlays first
-  document.getElementById('bid-overlay').classList.remove('active');
-  document.getElementById('trump-overlay').classList.remove('active');
-  document.getElementById('double-overlay').classList.remove('active');
+// ── PHASE UI (overlays + controls) ──
+function renderPhaseUI(){
+  let phase=G.phase;
+  // Hide all overlays by default
+  showOv(null);
+  document.getElementById('reveal-btn').style.display='none';
+  document.getElementById('marriage-btn').style.display='none';
+  document.getElementById('msg').textContent='';
 
-  if(phase==='bid'){
-    let bo = document.getElementById('bid-overlay');
-    bo.classList.add('active');
-    // Preview cards
-    let bc = document.getElementById('bo-cards');
-    bc.innerHTML='';
-    (G.first4[mySeat]||[]).forEach(c=>bc.appendChild(makeCardEl(c,false)));
-    // Bid value
-    document.getElementById('bo-bid-val').textContent = G.bid>15||G.bidder>=0 ? G.bid : '—';
-    document.getElementById('bo-bid-by').textContent  = G.bidder>=0 ? pName(G.bidder) : '—';
-    let btns = document.getElementById('bo-btns');
-    let wait = document.getElementById('bo-wait');
-    btns.innerHTML=''; wait.style.display='none';
-    if(G.currentPlayer===mySeat){
-      // Bid buttons
-      for(let b=G.bid+1;b<=28;b++){
-        let btn=document.createElement('button');
-        btn.className='btn'; btn.textContent=b;
-        btn.style.cssText='padding:7px 12px;font-size:0.78rem;';
-        btn.onclick=()=>doBid(b);
-        btns.appendChild(btn);
-      }
-      // Pass button — not on very first action if no bid yet
-      if(G.bidder!==-1||G.passCount>0){
-        let pb=document.createElement('button');
-        pb.className='btn'; pb.textContent='PASS'; pb.onclick=()=>doBid(0);
-        btns.appendChild(pb);
-      }
-    } else {
-      wait.style.display='block';
-      wait.textContent = G.currentPlayer>=0 ? `${pName(G.currentPlayer).toUpperCase()} IS BIDDING...` : 'WAITING...';
-    }
-  }
+  if(phase==='bid')    renderBidOv();
+  else if(phase==='trump')  renderTrumpOv();
+  else if(phase==='double') renderDoubleOv();
+  else if(phase==='play')   renderPlayControls();
+  else if(phase==='over')   showRoundOver();
+}
 
-  else if(phase==='trump'){
-    if(G.bidWinner===mySeat){
-      document.getElementById('trump-overlay').classList.add('active');
-      document.getElementById('trump-ov-info').textContent=`You won the bid with ${G.bid}. Pick your trump:`;
-    } else {
-      // Show waiting in controls
-      setMsg(`${pName(G.bidWinner)} is choosing trump...`);
+function renderBidOv(){
+  showOv('bid-ov');
+  // Preview cards
+  let pc=document.getElementById('bid-preview');
+  pc.innerHTML='';
+  arr(G.first4[mySeat]).forEach(c=>{if(c)pc.appendChild(makeCard(c));});
+  document.getElementById('cur-bid').textContent=G.bidder>=0?G.bid:'—';
+  document.getElementById('cur-bidder').textContent=G.bidder>=0?pName(G.bidder):'—';
+  let btns=document.getElementById('bid-btns');
+  let wait=document.getElementById('bid-wait');
+  btns.innerHTML=''; wait.style.display='none';
+  if(G.currentPlayer===mySeat){
+    for(let b=G.bid+1;b<=28;b++){
+      let btn=document.createElement('button');
+      btn.className='btn'; btn.textContent=b;
+      btn.style.cssText='padding:7px 12px;font-size:0.78rem;';
+      btn.onclick=()=>doBid(b);
+      btns.appendChild(btn);
     }
-  }
-
-  else if(phase==='double'){
-    let bidTeam = G.bidWinner%2;
-    let myTeam  = mySeat%2;
-    let myVote  = G.doubleVotes ? G.doubleVotes[mySeat] : undefined;
-    if(myTeam!==bidTeam && myVote===undefined){
-      document.getElementById('double-overlay').classList.add('active');
-      document.getElementById('double-ov-info').textContent=
-        `${pName(G.bidWinner)} bid ${G.bid}.\nDouble = ×2 points for winner.`;
-      let db2 = document.getElementById('double-ov-btns');
-      db2.innerHTML='';
-      let d=document.createElement('button'); d.className='btn danger'; d.textContent='DOUBLE'; d.onclick=()=>doVoteDouble(true);
-      let p=document.createElement('button'); p.className='btn'; p.textContent='PASS'; p.onclick=()=>doVoteDouble(false);
-      db2.appendChild(d); db2.appendChild(p);
-      document.getElementById('double-ov-wait').textContent='';
-    } else if(myTeam!==bidTeam && myVote!==undefined){
-      document.getElementById('double-overlay').classList.add('active');
-      document.getElementById('double-ov-info').textContent='Waiting for your teammate...';
-      document.getElementById('double-ov-btns').innerHTML='';
-      document.getElementById('double-ov-wait').textContent=`Your vote: ${myVote?'DOUBLE':'PASS'}`;
-    } else {
-      setMsg('Opponents are deciding whether to double...');
+    if(G.bidder!==-1||G.passCount>0){
+      let pb=document.createElement('button');
+      pb.className='btn'; pb.textContent='PASS'; pb.onclick=()=>doBid(0);
+      btns.appendChild(pb);
     }
-  }
-
-  else if(phase==='play'){
-    let aa = document.getElementById('action-area');
-    aa.innerHTML='';
-    if(G.currentPlayer===mySeat){
-      setMsg('Your turn — play a card');
-      if(!G.trumpRevealed&&G.bidWinner===mySeat){
-        let rb=document.createElement('button'); rb.className='btn'; rb.textContent='REVEAL TRUMP';
-        rb.onclick=doRevealTrump; aa.appendChild(rb);
-      }
-      if(canDeclareMarriage()){
-        let mb=document.createElement('button'); mb.className='btn gold'; mb.textContent='💍 MARRIAGE';
-        mb.onclick=doDeclareMarriage; aa.appendChild(mb);
-      }
-    } else {
-      setMsg(`${pName(G.currentPlayer)}'s turn`);
-    }
+  } else {
+    wait.style.display='block';
+    wait.textContent=G.currentPlayer>=0?`${pName(G.currentPlayer).toUpperCase()} IS BIDDING...`:'WAITING...';
   }
 }
 
-function renderControls(){ showOverlays(); }
+function renderTrumpOv(){
+  if(G.bidWinner===mySeat){
+    showOv('trump-ov');
+    document.getElementById('trump-ov-info').textContent=`You won the bid with ${G.bid}. Pick trump:`;
+  } else {
+    showOv(null);
+    document.getElementById('msg').textContent=`${pName(G.bidWinner)} is choosing trump...`;
+  }
+}
+
+function renderDoubleOv(){
+  let bidTeam=G.bidWinner%2, myTeam=mySeat%2;
+  let myVote=G.doubleVotes?G.doubleVotes[mySeat]:undefined;
+  if(myTeam!==bidTeam&&myVote===undefined){
+    showOv('double-ov');
+    document.getElementById('double-info').textContent=`${pName(G.bidWinner)} bid ${G.bid}.\nDouble = ×2 points for winner.`;
+    let db=document.getElementById('double-btns'); db.innerHTML='';
+    let d=document.createElement('button'); d.className='btn danger'; d.textContent='DOUBLE'; d.onclick=()=>voteDouble(true);
+    let p=document.createElement('button'); p.className='btn'; p.textContent='PASS'; p.onclick=()=>voteDouble(false);
+    db.appendChild(d); db.appendChild(p);
+    document.getElementById('double-wait').style.display='none';
+  } else if(myTeam!==bidTeam&&myVote!==undefined){
+    showOv('double-ov');
+    document.getElementById('double-info').textContent='Waiting for teammate...';
+    document.getElementById('double-btns').innerHTML='';
+    document.getElementById('double-wait').style.display='block';
+    document.getElementById('double-wait').textContent=`Your vote: ${myVote?'DOUBLE':'PASS'}`;
+  } else {
+    showOv(null);
+    document.getElementById('msg').textContent='Opponents deciding to double...';
+  }
+}
+
+function renderPlayControls(){
+  showOv(null);
+  if(G.currentPlayer===mySeat){
+    document.getElementById('msg').textContent='Your turn — play a card';
+    if(!G.trumpRevealed&&G.bidWinner===mySeat)
+      document.getElementById('reveal-btn').style.display='inline-block';
+    if(canMarriage())
+      document.getElementById('marriage-btn').style.display='inline-block';
+  } else {
+    document.getElementById('msg').textContent=`${pName(G.currentPlayer)}'s turn`;
+  }
+}
 
 // ── ACTIONS ──
 async function doBid(val){
-  if(G.currentPlayer!==mySeat) return;
-  let upd = {};
-  if(val===0){
-    upd['passCount'] = (G.passCount||0)+1;
-  } else {
-    upd['bid']       = val;
-    upd['bidder']    = mySeat;
-    upd['passCount'] = 0;
-  }
-  // Advance to next player
-  let nextPlayer = (mySeat+1)%4;
-  upd['currentPlayer'] = nextPlayer;
-  await update(rRef('game'), upd);
-
-  // Check if bidding is done — use latest values
-  let newPassCount = upd['passCount']!==undefined ? upd['passCount'] : G.passCount;
-  let newBidder    = upd['bidder']!==undefined    ? upd['bidder']    : G.bidder;
-  let done = (newPassCount>=3 && newBidder!==-1) || newPassCount===4;
+  if(G.currentPlayer!==mySeat||G.phase!=='bid') return;
+  let passCount=val===0?(G.passCount||0)+1:(G.passCount||0);
+  let bidder=val===0?G.bidder:mySeat;
+  let bid=val===0?G.bid:val;
+  passCount=val===0?passCount:0;
+  let nextPlayer=(mySeat+1)%4;
+  // Check if bidding ends
+  let done=(passCount>=3&&bidder!==-1)||passCount===4;
   if(done){
-    // Give everyone all 8 cards
-    let fullHands = G.first4.map((h,p)=>[...h,...G.last4[p]]);
-    let bidWinner = newBidder===-1 ? 0 : newBidder;
-    let finalBid  = newBidder===-1 ? 16 : (upd['bid']||G.bid);
+    let bidWinner=bidder===-1?0:bidder;
+    let finalBid=bidder===-1?16:bid;
+    // Give all 8 cards
+    let fullHands=arr(G.first4).map((h,p)=>[...arr(h),...arr(G.last4[p])]);
     await update(rRef('game'),{
-      hands: fullHands,
-      bidWinner,
-      bid: finalBid,
-      phase: 'trump',
-      currentPlayer: bidWinner,
+      bid:finalBid, bidder:bidWinner, bidWinner,
+      passCount, hands:fullHands,
+      phase:'trump', currentPlayer:bidWinner,
     });
+  } else {
+    await update(rRef('game'),{bid,bidder,passCount,currentPlayer:nextPlayer});
   }
 }
 
 async function doChooseTrump(suit){
-  if(G.bidWinner!==mySeat) return;
-  await update(rRef('game'),{
-    trump: suit,
-    phase: 'double',
-    currentPlayer: -1,
-    doubleVotes: {},
-  });
+  if(G.bidWinner!==mySeat||G.phase!=='trump') return;
+  await update(rRef('game'),{trump:suit,phase:'double',currentPlayer:-1,doubleVotes:{}});
 }
 
-async function doVoteDouble(val){
-  let bidTeam = G.bidWinner%2;
-  if(mySeat%2 === bidTeam) return; // only opposing team votes
-  let votes = {...(G.doubleVotes||{}), [mySeat]: val};
-  await update(rRef('game/doubleVotes'),{[mySeat]: val});
-  // Find opposing seats
-  let oppSeats = [0,1,2,3].filter(s=>s%2!==bidTeam);
-  let snap = await get(rRef('game/doubleVotes'));
-  let allVotes = snap.val()||{};
-  let allDone  = oppSeats.every(s=>allVotes[s]!==undefined);
-  if(allDone){
-    let doubled = oppSeats.some(s=>allVotes[s]===true);
-    await update(rRef('game'),{
-      doubled,
-      phase: 'play',
-      currentPlayer: G.bidWinner,
-      trickLeader: G.bidWinner,
-    });
+async function voteDouble(val){
+  let bidTeam=G.bidWinner%2;
+  if(mySeat%2===bidTeam||G.phase!=='double') return;
+  await update(rRef('game/doubleVotes'),{[mySeat]:val});
+  // Check if both opp players voted
+  let oppSeats=[0,1,2,3].filter(s=>s%2!==bidTeam);
+  let snap=await get(rRef('game/doubleVotes'));
+  let votes=snap.val()||{};
+  if(oppSeats.every(s=>votes[s]!==undefined)){
+    let doubled=oppSeats.some(s=>votes[s]===true);
+    await update(rRef('game'),{doubled,phase:'play',currentPlayer:G.bidWinner,trickLeader:G.bidWinner});
   }
 }
 
-async function doPlayCard(idx){
-  if(G.currentPlayer!==mySeat || G.phase!=='play') return;
-  let card = (G.hands[mySeat]||[])[idx];
-  if(!card || !isValidPlay(mySeat,card)) return;
-
-  let newHand  = G.hands[mySeat].filter((_,i)=>i!==idx);
-  let newTrick = (G.trick||[null,null,null,null]).map((c,i)=>i===mySeat?card:(c||null));
-  let trumpRevealed = G.trumpRevealed || (card.suit===G.trump);
-  let played = newTrick.filter(x=>x).length;
-  let nextPlayer = played===4 ? -1 : (mySeat+1)%4;
-
-  await update(rRef('game'), {
-    [`hands/${mySeat}`]: newHand,
-    trick:         newTrick,
-    trumpRevealed,
-    currentPlayer: nextPlayer,
+async function playCard(idx){
+  if(G.currentPlayer!==mySeat||G.phase!=='play') return;
+  let hand=arr(G.hands[mySeat]);
+  let card=hand[idx];
+  if(!card||!isValid(mySeat,card)) return;
+  let newHand=hand.filter((_,i)=>i!==idx);
+  // Build new trick safely
+  let trick=arr(G.trick).map(c=>c||null);
+  trick[mySeat]=card;
+  let trumpRevealed=G.trumpRevealed||(card.suit===G.trump);
+  let played=trick.filter(x=>x).length;
+  let nextPlayer=played===4?-1:(mySeat+1)%4;
+  // Write to Firebase
+  await update(rRef('game'),{
+    [`hands/${mySeat}`]:newHand,
+    trick, trumpRevealed,
+    currentPlayer:nextPlayer,
   });
-  // Only the player who played the LAST card resolves the trick
-  if(played===4) setTimeout(()=>resolveTrick(), 1000);
+  // Only the 4th player resolves
+  if(played===4) setTimeout(resolveTrick,900);
 }
 
 async function resolveTrick(){
-  let snap = await get(rRef('game'));
-  let g = snap.val();
-  // Safety check — bail if trick already cleared or not all 4 cards played
-  if(!g || g.phase!=='play') return;
-  let trick = g.trick||[null,null,null,null];
-  if(trick.filter(x=>x).length < 4) return;
-
-  let trickLeader = g.trickLeader;
-  let ledSuit = trick[trickLeader].suit;
-  let winner = trickLeader;
+  let snap=await get(rRef('game'));
+  let g=snap.val();
+  if(!g||g.phase!=='play') return;
+  let trick=arr(g.trick);
+  if(trick.filter(x=>x).length<4) return;
+  let leader=g.trickLeader;
+  let ledSuit=trick[leader].suit;
+  // Find winner (same logic as solo v12)
+  let winner=leader;
   for(let i=0;i<4;i++){
     if(!trick[i]||i===winner) continue;
-    if(cardBeats(trick[i], trick[winner], ledSuit, g.trump, g.trumpRevealed)) winner=i;
+    if(beats(trick[i],trick[winner],ledSuit,g.trump,g.trumpRevealed)) winner=i;
   }
-  let team = winner%2;
-  let pts = trick.reduce((s,c)=>{
+  let team=winner%2;
+  // Points — trump scores 0 if not revealed
+  let pts=trick.reduce((s,c)=>{
     if(!c) return s;
-    if(!g.trumpRevealed && c.suit===g.trump) return s;
+    if(!g.trumpRevealed&&c.suit===g.trump) return s;
     return s+PTS[c.rank];
   },0);
-  let newTP = [...(g.trickPoints||[0,0])];
-  let newTW = [...(g.tricksWon||[0,0])];
-  newTP[team]+=pts;
-  newTW[team]++;
-  let tricksPlayed=(g.tricksPlayed||0)+1;
-  if(tricksPlayed===8) newTP[team]+=1;
-  let isOver = tricksPlayed===8;
-  let totalScores=[...(g.totalScores||[0,0])];
+  let tp=[...(g.trickPoints||[0,0])];
+  let tw=[...(g.tricksWon||[0,0])];
+  tp[team]+=pts; tw[team]++;
+  let played=(g.tricksPlayed||0)+1;
+  if(played===8) tp[team]+=1; // last trick bonus
+  let isOver=played===8;
+  let ts=[...(g.totalScores||[0,0])];
   if(isOver){
-    let bidTeam=g.bidWinner%2;
-    let bidMet=newTP[bidTeam]>=g.bid;
+    let bt=g.bidWinner%2;
+    let met=tp[bt]>=g.bid;
     let mult=g.doubled?2:1;
-    if(bidMet) totalScores[bidTeam]+=mult;
-    else totalScores[1-bidTeam]+=mult;
+    if(met) ts[bt]+=mult; else ts[1-bt]+=mult;
   }
   await update(rRef('game'),{
-    trick:         [null,null,null,null],
-    trickPoints:   newTP,
-    tricksWon:     newTW,
-    tricksPlayed,
-    trickLeader:   winner,
-    currentPlayer: winner,
-    totalScores,
-    phase: isOver?'over':'play',
+    trick:[null,null,null,null],
+    trickPoints:tp, tricksWon:tw,
+    tricksPlayed:played,
+    trickLeader:winner, currentPlayer:winner,
+    totalScores:ts,
+    phase:isOver?'over':'play',
   });
 }
 
@@ -658,104 +588,99 @@ async function doRevealTrump(){
   await update(rRef('game'),{trumpRevealed:true});
 }
 
-async function doDeclareMarriage(){
-  if(!canDeclareMarriage()) return;
-  let newBid = Math.max(15, G.bid-3);
-  await update(rRef('game'),{marriageDeclared:true, bid:newBid});
-  showToast('💍 Marriage declared! Bid −3');
+async function doMarriage(){
+  if(!canMarriage()) return;
+  let newBid=Math.max(15,G.bid-3);
+  await update(rRef('game'),{marriageDeclared:true,bid:newBid});
+  toast('💍 Marriage! Bid −3');
 }
 
-// ── CARD LOGIC ──
-function cardStrength(c, ledSuit, trump, trumpRevealed){
-  if(!trumpRevealed) return PTS[c.rank]*10 + ORD[c.rank];
-  if(c.suit===trump)   return 200 + ORD[c.rank];
-  if(c.suit===ledSuit) return 100 + ORD[c.rank];
+// ── CARD LOGIC (exact copy from solo v12) ──
+function cardStr(c,ledSuit,trump,revealed){
+  if(!revealed) return PTS[c.rank]*10+ORD[c.rank];
+  if(c.suit===trump) return 200+ORD[c.rank];
+  if(c.suit===ledSuit) return 100+ORD[c.rank];
   return ORD[c.rank];
 }
-function cardBeats(c, w, ledSuit, trump, trumpRevealed){
-  return cardStrength(c,ledSuit,trump,trumpRevealed) > cardStrength(w,ledSuit,trump,trumpRevealed);
+function beats(c,w,ledSuit,trump,revealed){
+  return cardStr(c,ledSuit,trump,revealed)>cardStr(w,ledSuit,trump,revealed);
 }
-function isValidPlay(p, card){
-  if(!G || G.currentPlayer!==p || G.phase!=='play') return false;
-  let trick = G.trick||[null,null,null,null];
-  // Find the led card (first card played this trick)
-  let ledCard = null;
-  for(let i=0;i<4;i++) if(trick[i]){ ledCard=trick[i]; break; }
-  // Leading the trick — any card is valid
-  if(!ledCard) return true;
-  let ledSuit = ledCard.suit;
-  let hand = (G.hands[p]||[]).filter(x=>x);
-  // Must follow led suit if possible
-  let hasSuit = hand.some(c=>c.suit===ledSuit);
-  if(hasSuit) return card.suit===ledSuit;
-  // Can't follow suit — must play trump if trump is revealed AND player has trump
-  if(G.trumpRevealed){
-    let hasTrump = hand.some(c=>c.suit===G.trump);
-    if(hasTrump) return card.suit===G.trump;
-  }
-  // No led suit, no trump (or trump not revealed) — any card is valid
+function isValid(p,card){
+  if(!G||G.currentPlayer!==p||G.phase!=='play') return false;
+  let trick=arr(G.trick);
+  let led=null; for(let i=0;i<4;i++) if(trick[i]){led=trick[i];break;}
+  if(!led) return true;
+  let ls=led.suit;
+  let hand=arr(G.hands[p]).filter(x=>x);
+  if(hand.some(c=>c.suit===ls)) return card.suit===ls;
+  if(G.trumpRevealed&&hand.some(c=>c.suit===G.trump)) return card.suit===G.trump;
   return true;
 }
-function canDeclareMarriage(){
+function canMarriage(){
   if(!G||!G.trumpRevealed||G.bidWinner!==mySeat||G.marriageDeclared) return false;
-  let hand=G.hands[mySeat]||[];
-  return hand.some(c=>c&&c.suit===G.trump&&c.rank==='K') &&
-         hand.some(c=>c&&c.suit===G.trump&&c.rank==='Q');
+  let hand=arr(G.hands[mySeat]).filter(x=>x);
+  return hand.some(c=>c.suit===G.trump&&c.rank==='K')&&hand.some(c=>c.suit===G.trump&&c.rank==='Q');
 }
 
 // ── ROUND OVER ──
 function showRoundOver(){
-  if(!G) return;
-  let bidTeam=G.bidWinner%2;
-  let bidMet=(G.trickPoints[bidTeam]||0)>=G.bid;
-  let myTeamWon = (mySeat%2===bidTeam)===bidMet;
-  document.getElementById('ov-title').textContent = myTeamWon?'🎉 Your Team Wins!':'😔 Your Team Loses';
-  document.getElementById('ov-main').textContent  = bidMet?'Bid Met!':'Bid Failed!';
-  let ts = G.totalScores||[0,0];
+  let bt=G.bidWinner%2, met=(G.trickPoints[bt]||0)>=G.bid;
+  let win=(mySeat%2===bt)===met;
+  document.getElementById('ov-title').textContent=win?'🎉 Your Team Wins!':'😔 Your Team Loses';
+  document.getElementById('ov-main').textContent=met?'Bid Met!':'Bid Failed!';
+  let ts=G.totalScores||[0,0];
   document.getElementById('ov-table').innerHTML=`
     <tr><td>Bid</td><td>${G.bid} by ${pName(G.bidWinner)}</td></tr>
-    <tr><td>${pName(0)} & ${pName(2)} pts</td><td>${G.trickPoints[0]}</td></tr>
-    <tr><td>${pName(1)} & ${pName(3)} pts</td><td>${G.trickPoints[1]}</td></tr>
-    ${G.doubled?'<tr class="highlight"><td>Doubled</td><td>×2</td></tr>':''}
-    ${G.marriageDeclared?'<tr class="highlight"><td>Marriage</td><td>−3 bid</td></tr>':''}
-    <tr><td colspan="2" style="padding-top:8px;border-top:1px solid #252540;"></td></tr>
-    <tr class="highlight"><td>${pName(0)} & ${pName(2)} total</td><td>${ts[0]}</td></tr>
-    <tr class="highlight"><td>${pName(1)} & ${pName(3)} total</td><td>${ts[1]}</td></tr>
+    <tr><td>${pName(0)}&${pName(2)} pts</td><td>${G.trickPoints[0]}</td></tr>
+    <tr><td>${pName(1)}&${pName(3)} pts</td><td>${G.trickPoints[1]}</td></tr>
+    ${G.doubled?'<tr class="hi"><td>Doubled</td><td>×2</td></tr>':''}
+    ${G.marriageDeclared?'<tr class="hi"><td>Marriage</td><td>−3 bid</td></tr>':''}
+    <tr><td colspan="2" style="padding-top:8px;border-top:1px solid #252540"></td></tr>
+    <tr class="hi"><td>${pName(0)}&${pName(2)} total</td><td>${ts[0]}</td></tr>
+    <tr class="hi"><td>${pName(1)}&${pName(3)} total</td><td>${ts[1]}</td></tr>
   `;
-  document.getElementById('overlay').classList.add('active');
+  document.getElementById('round-ov').classList.add('active');
 }
 
 async function playAgain(){
-  document.getElementById('overlay').classList.remove('active');
-  if(mySeat===0){
-    await update(rRef(),{status:'lobby', game:null});
-  }
-  show('lobby-screen');
-  listenLobby();
+  document.getElementById('round-ov').classList.remove('active');
+  if(mySeat===0) await update(rRef(),{status:'lobby',game:null});
+  showScreen('lobby-screen'); listenLobby();
 }
 
-// ── CARD ELEMENTS ──
-function makeCardEl(c, small=false){
+// ── HELPERS ──
+// Firebase arrays can come back as objects — this safely converts them
+function arr(x){
+  if(!x) return [];
+  if(Array.isArray(x)) return x;
+  // Firebase object with numeric keys → array
+  let max=Math.max(...Object.keys(x).map(Number));
+  let out=[];
+  for(let i=0;i<=max;i++) out.push(x[i]||null);
+  return out;
+}
+function makeCard(c,small=false){
   let el=document.createElement('div');
   el.className='card '+((c.suit==='♥'||c.suit==='♦')?'red':'black');
   if(small) el.classList.add('small');
   el.innerHTML=`<span class="rank">${c.rank}</span><span class="suit-sym">${c.suit}</span>`;
   return el;
 }
-function makeBackCard(){
+function makeBack(){
   let el=document.createElement('div');
   el.className='card back small';
   el.innerHTML='<div class="back-pattern"></div>';
   return el;
 }
 
-// ── EXPOSE ──
-window.createRoom     = createRoom;
-window.joinRoom       = joinRoom;
-window.hostStartGame  = hostStartGame;
-window.playAgain      = playAgain;
-window.doChooseTrump  = doChooseTrump;
-window.doVoteDouble   = doVoteDouble;
+// expose to HTML onclick
+window.createRoom=createRoom;
+window.joinRoom=joinRoom;
+window.hostStart=hostStart;
+window.doChooseTrump=doChooseTrump;
+window.doRevealTrump=doRevealTrump;
+window.doMarriage=doMarriage;
+window.playAgain=playAgain;
 </script>
 </body>
 </html>
