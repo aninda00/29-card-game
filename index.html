@@ -19,10 +19,11 @@
   .btn.danger:hover{background:#e0555522;}
   .btn.gold{border-color:#c9a84c;color:#c9a84c;}
   .btn.gold:hover{background:#c9a84c22;}
-  input{background:#242438;border:1px solid #333;color:#ccc;padding:10px 14px;border-radius:4px;font-size:0.85rem;outline:none;width:200px;}
+  input{background:#242438;border:1px solid #333;color:#ccc;padding:10px 14px;border-radius:4px;font-size:0.85rem;outline:none;width:220px;}
   input:focus{border-color:#7c6fff;}
-  .code-display{font-size:2rem;letter-spacing:8px;color:#7c6fff;font-weight:300;}
-  #player-list{list-style:none;font-size:0.8rem;line-height:2.2;}
+  .code-display{font-size:1.6rem;letter-spacing:6px;color:#7c6fff;font-weight:300;word-break:break-all;text-align:center;max-width:260px;padding:8px 12px;border:1px solid #2a2a45;border-radius:6px;background:#1e1e34;}
+  #player-list{list-style:none;font-size:0.8rem;line-height:2.2;width:260px;}
+  #player-list li{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 0;}
 
   /* MAIN */
   #main-screen{display:none;flex-direction:column;height:100vh;background:#1a1a2e;}
@@ -110,7 +111,7 @@
   <input id="my-name" placeholder="Your name" maxlength="16"/>
   <button class="btn primary" onclick="createRoom()" style="margin-top:4px">CREATE ROOM</button>
   <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
-    <input id="room-input" placeholder="Room code" maxlength="4" style="width:130px;text-transform:uppercase;letter-spacing:4px"/>
+    <input id="room-input" placeholder="Room code" maxlength="4" style="width:140px;text-transform:uppercase;letter-spacing:4px;text-align:center;"/>
     <button class="btn" onclick="joinRoom()">JOIN</button>
   </div>
   <div style="font-size:0.7rem;color:#444;margin-top:4px">4 players · P1&P3 vs P2&P4</div>
@@ -389,12 +390,12 @@ function renderHands(){
   let myEl = document.getElementById('h-bottom');
   myEl.innerHTML = '';
   if(G.phase==='play'||G.phase==='over'){
-    let hand = toArr(G.hands[mySeat]).filter(x=>x);
+    let hand = toArr(G.hands[mySeat]).filter(x=>x); // compact for display
     hand.forEach((c,i)=>{
       if(!c) return;
       let el = makeCard(c);
       if(G.currentPlayer===mySeat && isValid(mySeat,c)){
-        el.onclick = ()=>playCard(i);
+        el.onclick = ()=>playCard(i); // i = index in compacted array
       } else {
         el.classList.add('disabled');
       }
@@ -597,22 +598,29 @@ async function voteDouble(val){
 // ── PLAY CARD ──
 async function playCard(idx){
   if(G.currentPlayer!==mySeat || G.phase!=='play') return;
-  let hand = toArr(G.hands[mySeat]).filter(x=>x);
-  let card = hand[idx];
+  // Use raw hand array (with nulls intact) so idx matches exactly
+  let hand = toArr(G.hands[mySeat]);
+  // Find the idx-th non-null card
+  let count = -1;
+  let realIdx = -1;
+  for(let i=0;i<hand.length;i++){
+    if(hand[i]){ count++; if(count===idx){ realIdx=i; break; } }
+  }
+  if(realIdx===-1) return;
+  let card = hand[realIdx];
   if(!card || !isValid(mySeat,card)) return;
 
-  // Remove card from hand
-  let newHand = hand.filter((_,i)=>i!==idx);
+  // Remove card — set to null so other indices stay stable
+  let newHand = hand.map((c,i)=>i===realIdx?null:c).filter(x=>x); // compact nulls out
 
-  // Build new trick — convert Firebase object safely first
-  let trick    = toArr(G.trick,4).map(c=>c||null);
+  // Build trick safely
+  let trick = toArr(G.trick,4).map(c=>c||null);
   trick[mySeat] = card;
 
   let trumpRevealed = G.trumpRevealed || (card.suit===G.trump);
   let played        = trick.filter(x=>x).length;
   let nextPlayer    = played===4 ? -1 : (mySeat+1)%4;
 
-  // ── single atomic write ──
   await update(rRef('game'),{
     [`hands/${mySeat}`]: newHand,
     trick,
@@ -620,10 +628,9 @@ async function playCard(idx){
     currentPlayer: nextPlayer,
   });
 
-  // Only the player who laid the 4th card resolves the trick
   if(played===4 && !resolving){
     resolving = true;
-    setTimeout(async ()=>{ await resolveTrick(); resolving=false; }, 1000);
+    setTimeout(async()=>{ await resolveTrick(); resolving=false; }, 1000);
   }
 }
 
@@ -633,10 +640,9 @@ async function resolveTrick(){
   let g    = snap.val();
   if(!g || g.phase!=='play') return;
   let trick = toArr(g.trick,4);
-  if(trick.filter(x=>x).length<4) return;  // safety
+  if(trick.filter(x=>x).length<4) return;
 
-  // Find winner — same as solo v12 cardStr / beats
-  let leader  = g.trickLeader;
+  let leader  = Number(g.trickLeader)||0;
   let ledSuit = trick[leader].suit;
   let winner  = leader;
   for(let i=0;i<4;i++){
@@ -645,42 +651,41 @@ async function resolveTrick(){
   }
 
   let team = winner%2;
-  // Points — trump scores 0 if not yet revealed (same as solo v12)
-  let pts = trick.reduce((s,c)=>{
+  let pts  = trick.reduce((s,c)=>{
     if(!c) return s;
     if(!g.trumpRevealed && c.suit===g.trump) return s;
-    return s + PTS[c.rank];
+    return s + (PTS[c.rank]||0);
   },0);
 
-  let tp = toArr(g.trickPoints,2).map(v=>v||0);
-  let tw = toArr(g.tricksWon,2).map(v=>v||0);
+  // Explicitly parse existing scores as numbers to avoid string concat
+  let tp = toArr(g.trickPoints,2).map(v=>Number(v)||0);
+  let tw = toArr(g.tricksWon,2).map(v=>Number(v)||0);
   tp[team] += pts;
   tw[team]++;
-  let tricksPlayed = (g.tricksPlayed||0)+1;
-  if(tricksPlayed===8) tp[team]+=1;  // last trick bonus
+  let tricksPlayed = (Number(g.tricksPlayed)||0) + 1;
+  if(tricksPlayed===8) tp[team] += 1;  // last trick bonus
 
   let isOver = tricksPlayed===8;
-  let ts     = toArr(g.totalScores,2).map(v=>v||0);
+  let ts     = toArr(g.totalScores,2).map(v=>Number(v)||0);
   if(isOver){
-    let bt   = g.bidWinner%2;
-    let met  = tp[bt] >= g.bid;
-    let mult = g.doubled?2:1;
+    let bt   = Number(g.bidWinner)%2;
+    let met  = tp[bt] >= Number(g.bid);
+    let mult = g.doubled ? 2 : 1;
     if(met) ts[bt]+=mult; else ts[1-bt]+=mult;
   }
 
-  // Show trick result toast briefly, then clear trick and advance
   showTrickResult(`${pName(winner)} won +${pts}pts`);
   setTimeout(()=>hideTrickResult(), 1100);
 
   await update(rRef('game'),{
-    trick:        [null,null,null,null],
-    trickPoints:  tp,
-    tricksWon:    tw,
+    trick:         [null,null,null,null],
+    trickPoints:   tp,
+    tricksWon:     tw,
     tricksPlayed,
-    trickLeader:  winner,
-    currentPlayer:winner,   // winner leads next trick — same as solo v12
-    totalScores:  ts,
-    phase: isOver?'over':'play',
+    trickLeader:   winner,
+    currentPlayer: winner,
+    totalScores:   ts,
+    phase: isOver ? 'over' : 'play',
   });
 }
 
