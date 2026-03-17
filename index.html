@@ -4,7 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>29 Card Game</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='10' fill='%231a1a2e'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Segoe UI,sans-serif' font-size='30' font-weight='700' fill='%237c6fff'>29</text></svg>">
+<link id="favicon" rel="icon" type="image/png" href="">
+<script>
+  // Generate favicon using canvas
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const x = c.getContext('2d');
+  // Background
+  x.fillStyle = '#1a1a2e';
+  x.beginPath();
+  x.roundRect(0, 0, 64, 64, 10);
+  x.fill();
+  // Text
+  x.fillStyle = '#7c6fff';
+  x.font = 'bold 30px Segoe UI, sans-serif';
+  x.textAlign = 'center';
+  x.textBaseline = 'middle';
+  x.fillText('29', 32, 34);
+  document.getElementById('favicon').href = c.toDataURL('image/png');
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#1a1a2e;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;}
