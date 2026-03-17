@@ -292,12 +292,19 @@ function trickMsg(t){let e=document.getElementById('trick-msg');e.textContent=t;
 async function createRoom(){
   let name = document.getElementById('inp-name').value.trim()||'Player 1';
   myRoom = code4(); mySeat = 0;
+  let data = {players:{0:name}, status:'lobby'};
+  console.log('Creating room:', myRoom, data);
   try {
-    await set(R(), {players:{0:name}, status:'lobby'});
+    await set(R(), data);
+    console.log('Room created OK');
     document.getElementById('lobby-code').textContent = myRoom;
     screen('lobby-screen');
     listenLobby();
-  } catch(e){ alert('Error creating room: '+e.message); }
+  } catch(e){
+    console.error('Create room error:', e);
+    alert('Could not create room.\n\nError: '+e.message+'\n\nMake sure Firebase Realtime Database rules allow read/write:\n{\n  "rules":{\n    ".read":true,\n    ".write":true\n  }\n}');
+    myRoom=null;
+  }
 }
 
 async function joinRoom(){
@@ -537,8 +544,18 @@ function uiPlay(){
   ov(null);
   if(N(G.cur)===mySeat){
     msg('Your turn — play a card');
-    if(!G.trumpR&&N(G.bidWinner)===mySeat)
-      document.getElementById('reveal-btn').style.display='inline-block';
+    // Show reveal trump button if:
+    // trump not yet revealed AND you are the bid winner OR you can't follow suit
+    if(!G.trumpR){
+      let trick=A(G.trick,4);
+      let led=null; for(let i=0;i<4;i++) if(trick[i]){led=trick[i];break;}
+      let hand=A(G.hands[mySeat]).filter(x=>x);
+      let cantFollow = led && !hand.some(c=>c.suit===led.suit);
+      let isBidWinner = N(G.bidWinner)===mySeat;
+      // Bid winner can reveal anytime; others can reveal only when they can't follow
+      if(isBidWinner||cantFollow)
+        document.getElementById('reveal-btn').style.display='inline-block';
+    }
     if(canMarry())
       document.getElementById('marry-btn').style.display='inline-block';
   } else {
@@ -724,7 +741,13 @@ async function playAgain(){
    CARD LOGIC  (from solo v12)
 ═══════════════════════════════════ */
 function cStr(c,ls,trump,rev){
-  if(!rev)         return N(PTS[c.rank])*10+N(ORD[c.rank]);
+  // If trump not revealed, trump cards are treated as normal cards (no special strength)
+  if(!rev){
+    // Before reveal: highest point value wins, rank as tiebreaker
+    // Trump cards treated same as any other card
+    return N(PTS[c.rank])*10+N(ORD[c.rank]);
+  }
+  // After trump revealed: trump > led suit > off-suit
   if(c.suit===trump)  return 200+N(ORD[c.rank]);
   if(c.suit===ls)     return 100+N(ORD[c.rank]);
   return N(ORD[c.rank]);
@@ -735,11 +758,15 @@ function valid(p,card){
   if(!G||N(G.cur)!==p||G.phase!=='play') return false;
   let trick=A(G.trick,4);
   let led=null; for(let i=0;i<4;i++) if(trick[i]){led=trick[i];break;}
-  if(!led) return true;
+  if(!led) return true; // leading — any card ok
   let ls=led.suit;
   let hand=A(G.hands[p]).filter(x=>x);
+  // Must follow led suit if possible
   if(hand.some(c=>c.suit===ls)) return card.suit===ls;
+  // Can't follow suit:
+  // If trump IS revealed → must play trump if they have it
   if(G.trumpR&&hand.some(c=>c.suit===G.trump)) return card.suit===G.trump;
+  // If trump NOT revealed → any card is valid (trump played = treated as normal)
   return true;
 }
 
